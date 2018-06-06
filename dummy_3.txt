@@ -1,0 +1,154 @@
+{
+    "volumes": {
+        "engine": {
+            "transportType": [
+                "TCP"
+            ], 
+            "uuid": "657bde68-ef5a-4dfb-8a84-458355539989", 
+            "disperseCount": "0", 
+            "bricks": [
+                "10.70.41.139:/gluster_bricks/engine/engine"
+            ], 
+            "volumeName": "engine", 
+            "volumeType": "DISTRIBUTE", 
+            "replicaCount": "1", 
+            "brickCount": "1", 
+            "redundancyCount": "0", 
+            "isArbiter": false, 
+            "distCount": "1", 
+            "volumeStatus": "ONLINE", 
+            "stripeCount": "1", 
+            "bricksInfo": [
+                {
+                    "isArbiter": false, 
+                    "name": "10.70.41.139:/gluster_bricks/engine/engine", 
+                    "hostUuid": "bdf1b650-037f-47fc-bac2-8f4be9a5910e"
+                }
+            ], 
+            "options": {
+                "performance.quick-read": "off", 
+                "network.ping-timeout": "30", 
+                "user.cifs": "off", 
+                "performance.strict-o-direct": "on", 
+                "cluster.eager-lock": "enable", 
+                "network.remote-dio": "off", 
+                "features.shard": "on", 
+                "cluster.quorum-type": "auto", 
+                "cluster.enable-shared-storage": "enable", 
+                "storage.owner-gid": "36", 
+                "cluster.locking-scheme": "granular", 
+                "performance.low-prio-threads": "32", 
+                "cluster.shd-wait-qlength": "10000", 
+                "cluster.data-self-heal-algorithm": "full", 
+                "performance.io-cache": "off", 
+                "storage.owner-uid": "36", 
+                "nfs.disable": "on", 
+                "transport.address-family": "inet", 
+                "cluster.shd-max-threads": "8", 
+                "cluster.server-quorum-type": "server", 
+                "cluster.granular-entry-heal": "enable", 
+                "performance.read-ahead": "off"
+            }
+        }, 
+        "data": {
+            "transportType": [
+                "TCP"
+            ], 
+            "uuid": "77b78d85-b077-4f1a-9cec-0d0d957969bc", 
+            "disperseCount": "0", 
+            "bricks": [
+                "10.70.41.139:/gluster_bricks/data/data"
+            ], 
+            "volumeName": "data", 
+            "volumeType": "DISTRIBUTE", 
+            "replicaCount": "1", 
+            "brickCount": "1", 
+            "redundancyCount": "0", 
+            "isArbiter": false, 
+            "distCount": "1", 
+            "volumeStatus": "ONLINE", 
+            "stripeCount": "1", 
+            "bricksInfo": [
+                {
+                    "isArbiter": false, 
+                    "name": "10.70.41.139:/gluster_bricks/data/data", 
+                    "hostUuid": "bdf1b650-037f-47fc-bac2-8f4be9a5910e"
+                }
+            ], 
+            "options": {
+                "performance.quick-read": "off", 
+                "network.ping-timeout": "30", 
+                "user.cifs": "off", 
+                "performance.strict-o-direct": "on", 
+                "cluster.eager-lock": "enable", 
+                "network.remote-dio": "off", 
+                "features.shard": "on", 
+                "cluster.quorum-type": "auto", 
+                "cluster.enable-shared-storage": "enable", 
+                "storage.owner-gid": "36", 
+                "cluster.locking-scheme": "granular", 
+                "performance.low-prio-threads": "32", 
+                "cluster.shd-wait-qlength": "10000", 
+                "cluster.data-self-heal-algorithm": "full", 
+                "performance.io-cache": "off", 
+                "storage.owner-uid": "36", 
+                "nfs.disable": "on", 
+                "transport.address-family": "inet", 
+                "cluster.shd-max-threads": "8", 
+                "cluster.server-quorum-type": "server", 
+                "cluster.granular-entry-heal": "enable", 
+                "performance.read-ahead": "off"
+            }
+        }, 
+        "vmstore": {
+            "transportType": [
+                "TCP"
+            ], 
+            "uuid": "1df8dbf6-6258-4b16-96c4-5001192dd064", 
+            "disperseCount": "0", 
+            "bricks": [
+                "10.70.41.139:/gluster_bricks/vmstore/vmstore"
+            ], 
+            "volumeName": "vmstore", 
+            "volumeType": "DISTRIBUTE", 
+            "replicaCount": "1", 
+            "brickCount": "1", 
+            "redundancyCount": "0", 
+            "isArbiter": false, 
+            "distCount": "1", 
+            "volumeStatus": "ONLINE", 
+            "stripeCount": "1", 
+            "bricksInfo": [
+                {
+                    "isArbiter": false, 
+                    "name": "10.70.41.139:/gluster_bricks/vmstore/vmstore", 
+                    "hostUuid": "bdf1b650-037f-47fc-bac2-8f4be9a5910e"
+                }
+            ], 
+            "options": {
+                "performance.quick-read": "off", 
+                "network.ping-timeout": "30", 
+                "user.cifs": "off", 
+                "performance.strict-o-direct": "on", 
+                "cluster.eager-lock": "enable", 
+                "network.remote-dio": "off", 
+                "features.shard": "on", 
+                "cluster.quorum-type": "auto", 
+                "cluster.enable-shared-storage": "enable", 
+                "storage.owner-gid": "36", 
+                "cluster.locking-scheme": "granular", 
+                "performance.low-prio-threads": "32", 
+                "cluster.shd-wait-qlength": "10000", 
+                "cluster.data-self-heal-algorithm": "full", 
+                "performance.io-cache": "off", 
+                "storage.owner-uid": "36", 
+                "nfs.disable": "on", 
+                "transport.address-family": "inet", 
+                "cluster.shd-max-threads": "8", 
+                "cluster.server-quorum-type": "server", 
+                "cluster.granular-entry-heal": "enable", 
+                "performance.read-ahead": "off"
+            }
+        }
+    }
+}

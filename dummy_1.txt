@@ -1,0 +1,9 @@
+{
+    "hosts": [
+        {
+            "status": "CONNECTED", 
+            "hostname": "10.70.41.139/22", 
+            "uuid": "bdf1b650-037f-47fc-bac2-8f4be9a5910e"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "dashboard": {
+        "index": {
+            "label": "Gluster Management",
+            "order": 1
+        }
+    },
+
+    "content-security-policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: *;"
+}

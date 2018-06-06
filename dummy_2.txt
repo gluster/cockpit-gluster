@@ -1,0 +1,34 @@
+{
+    "volumeStatus": {
+        "bricks": [
+            {
+                "status": "ONLINE", 
+                "hostuuid": "bdf1b650-037f-47fc-bac2-8f4be9a5910e", 
+                "pid": "27297", 
+                "rdma_port": "N/A", 
+                "brick": "10.70.41.139:/gluster_bricks/data/data", 
+                "port": "49153"
+            }, 
+            {
+                "status": "ONLINE", 
+                "hostuuid": "bdf1b650-037f-47fc-bac2-8f4be9a5910e", 
+                "pid": "26278", 
+                "rdma_port": "N/A", 
+                "brick": "10.70.41.139:/gluster_bricks/engine/engine", 
+                "port": "49152"
+            }, 
+            {
+                "status": "ONLINE", 
+                "hostuuid": "bdf1b650-037f-47fc-bac2-8f4be9a5910e", 
+                "pid": "28317", 
+                "rdma_port": "N/A", 
+                "brick": "10.70.41.139:/gluster_bricks/vmstore/vmstore", 
+                "port": "49154"
+            }
+        ], 
+        "shd": [], 
+        "nfs": [], 
+        "name": "data"
+    }
+}
+
