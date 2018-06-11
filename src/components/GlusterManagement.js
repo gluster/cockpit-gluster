@@ -118,10 +118,10 @@ class GlusterManagement extends Component {
     })
     }
   handleCreateVolume(){
-  window.top.location.href='/ovirt-dashboard-dev#/create_gluster_volume';
+  window.top.location.href='/ovirt-dashboard#/create_gluster_volume';
   }
   handleExpandCluster(){
-  window.top.location.href='/ovirt-dashboard-dev#/expand_cluster';
+  window.top.location.href='/ovirt-dashboard#/expand_cluster';
   }
   startGlusterManagement(action) {
       //set the relevant wizard to MANAGE
@@ -386,7 +386,7 @@ class GlusterManagement extends Component {
           </div>
         }
         {/* {this.state.gdeployState === "MANAGE" &&
-      <Redirect to="/ovirt-dashboard-dev#/create_gluster_volume"/>
+      <Redirect to="/ovirt-dashboard#/create_gluster_volume"/>
             <GdeploySetup onSuccess={this.applyGlusterChanges} onClose={this.abortCallback} gdeployWizardType={this.state.gdeployWizardType} />
         } */}
       </div>
