@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import Redirect from 'react-router'
-import GdeploySetup from './gdeploy/GdeploySetup'
+// import GdeploySetup from './gdeploy/GdeploySetup'
 
 const classNames = require('classnames');
 
