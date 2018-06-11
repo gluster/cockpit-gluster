@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import Redirect from 'react-router'
 import GdeploySetup from './gdeploy/GdeploySetup'
 
 const classNames = require('classnames');
@@ -9,6 +10,7 @@ class GlusterManagement extends Component {
     super(props);
     this.state = {
       volumeSelectedRow: 'None',
+      //refactor this variable name to host_list or host_json or something
       host: {},
       volumeBricks: {},
       volumeInfo: {},
@@ -38,7 +40,8 @@ class GlusterManagement extends Component {
           if(Object.keys(volumeInfoJson).length != 0 && Object.keys(volumeStatusJson).length != 0) {
             Object.keys(volumeInfoJson.volumes).forEach(function (volume) {
               volumeBricks[volume] = []
-              Object.values(volumeStatusJson.volumeStatus.bricks).forEach(function (brick) {
+              // Object.values(volumeStatusJson.volumeStatus.bricks).forEach(function (brick) {
+              volumeStatusJson.volumeStatus.bricks.forEach(function (brick) {
                 if(brick.brick.match(volume)) {
                   volumeBricks[volume].push(brick)
                 }
@@ -110,11 +113,18 @@ class GlusterManagement extends Component {
 
   handleVolumeRowClick(volume) {
     this.setState({
+      //unselects if already selected.
       volumeSelectedRow: this.state.volumeSelectedRow == volume ? 'None':volume
     })
     }
-
+  handleCreateVolume(){
+  window.top.location.href='/ovirt-dashboard-dev#/create_gluster_volume';
+  }
+  handleExpandCluster(){
+  window.top.location.href='/ovirt-dashboard-dev#/expand_cluster';
+  }
   startGlusterManagement(action) {
+      //set the relevant wizard to MANAGE
       let gdeployWizardType = action
       let gdeployState = "MANAGE"
       this.setState({ gdeployWizardType, gdeployState })
@@ -142,6 +152,7 @@ class GlusterManagement extends Component {
     let modalWindow = null
     let options = null
 
+    //generate hosts table
     if (Object.keys(this.state.host).length != 0) {
         hostsTable = []
         this.state.host.hosts.forEach(function(host, index) {
@@ -160,7 +171,7 @@ class GlusterManagement extends Component {
         )
       }, this)
     }
-
+    //generate brickstable
     if (Object.keys(this.state.volumeBricks).length != 0) {
       if(this.state.volumeSelectedRow !== 'None') {
         bricksTable = []
@@ -188,7 +199,7 @@ class GlusterManagement extends Component {
         }, this)
       }
     }
-
+    //modalwindow displays volumeinfo as a list of key values on the expanded volume
     if (this.state.volumeSelectedRow != 'None') {
       if (Object.keys(this.state.volumeInfo).length != 0) {
         modalWindow = []
@@ -197,11 +208,13 @@ class GlusterManagement extends Component {
         let that = this
         Object.keys(volumeTemp).forEach(function (key, index) {
           let values = volumeTemp[key]
+          //bools replaced with strings
           if (values === false) {
             values="false"
           } else if (values === true) {
             values="true"
           }
+          //bools are replaced with strings, why check for bools?
           if(typeof(values) == 'string' || typeof(values) == 'boolean') {
             modalWindow.push(
               <ul key={index} className="list-unstyled">
@@ -221,7 +234,7 @@ class GlusterManagement extends Component {
         })
       }
     }
-
+    //volumesTable generated
     if (Object.keys(this.state.volumeInfo).length != 0) {
       volumesTable = []
       Object.keys(this.state.volumeInfo.volumes).forEach(function(volume, index) {
@@ -281,17 +294,18 @@ class GlusterManagement extends Component {
     }
 
     return (
+
       <div>
-        { this.state.hostStatus === false &&
-          this.state.volumeStatusStatus === false &&
-          this.state.volumeInfoStatus === false &&
-          this.state.volumeBricksStatus === false &&
+        { !this.state.hostStatus &&
+          !this.state.volumeStatusStatus &&
+          !this.state.volumeInfoStatus &&
+          !this.state.volumeBricksStatus &&
           <div className="spinner spinner-lg"/>
         }
-        { this.state.hostStatus === true &&
-          this.state.volumeStatusStatus === true &&
-          this.state.volumeInfoStatus === true &&
-          this.state.volumeBricksStatus === true &&
+        { this.state.hostStatus &&
+          this.state.volumeStatusStatus &&
+          this.state.volumeInfoStatus &&
+          this.state.volumeBricksStatus &&
           <div>
             <div className="glusterHeading">
               <h1>Gluster Management</h1>
@@ -314,7 +328,8 @@ class GlusterManagement extends Component {
                 {hostsTable}
               </ul>
               <div className="manageGlusterButtons">
-                <button onClick={this.startGlusterManagement.bind(this, 'expand_cluster')}>Expand Cluster</button>
+                {/* <button onClick={this.startGlusterManagement.bind(this, 'expand_cluster')}>Expand Cluster</button> */}
+                <button onClick={this.handleExpandCluster}>Expand Cluster</button>
               </div>
             </div>
             <div className="volumeList">
@@ -347,7 +362,8 @@ class GlusterManagement extends Component {
                 {volumesTable}
               </ul>
               <div className="manageGlusterButtons">
-                <button onClick={this.startGlusterManagement.bind(this, 'create_volume')} >Create Volume</button>
+                {/* <button onClick={this.startGlusterManagement.bind(this, 'create_volume')} >Create Volume</button> */}
+                <button onClick={this.handleCreateVolume} >Create Volume</button>
               </div>
             </div>
             <div className="modal fade" id="about-modal" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -369,9 +385,10 @@ class GlusterManagement extends Component {
             </div>
           </div>
         }
-        {this.state.gdeployState === "MANAGE" &&
+        {/* {this.state.gdeployState === "MANAGE" &&
+      <Redirect to="/ovirt-dashboard-dev#/create_gluster_volume"/>
             <GdeploySetup onSuccess={this.applyGlusterChanges} onClose={this.abortCallback} gdeployWizardType={this.state.gdeployWizardType} />
-        }
+        } */}
       </div>
     )
   }

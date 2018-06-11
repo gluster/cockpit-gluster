@@ -118,17 +118,8 @@ class WizardHostStep extends Component {
     getHostList(callback){
       cockpit.spawn(
         // [ "vdsm-client", "--gluster-enabled", "GlusterHost", "list" ]
-        ["echo","dummy"]
+        ["cat","/home/admin/dummy_1.txt"]
       ).done(function(list) {
-        list = `{
-      "hosts": [
-          {
-              "status": "CONNECTED",
-              "hostname": "10.70.41.139/22",
-              "uuid": "bdf1b650-037f-47fc-bac2-8f4be9a5910e"
-          }
-      ]
-  }`
         if(list != null || list != undefined) {
           let poolList = JSON.parse(list)
           poolList.hosts.forEach(function (host, index) {
