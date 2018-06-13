@@ -2,3 +2,5 @@
 /notes.txt
 .vagrant/
 dist/
+build_dir
+rpm_build

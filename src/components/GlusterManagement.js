@@ -65,8 +65,8 @@ class GlusterManagement extends Component {
 
   getHostList(callback){
     cockpit.spawn(
-      // [ "vdsm-client", "--gluster-enabled", "GlusterHost", "list" ]
-      ["cat","/home/admin/dummy_1.txt"]
+      [ "vdsm-client", "--gluster-enabled", "GlusterHost", "list" ]
+      // ["cat","/home/admin/dummy_1.txt"]
     ).done(function(list) {
       if(list != null || list != undefined) {
         let poolList = JSON.parse(list)
@@ -88,8 +88,8 @@ class GlusterManagement extends Component {
 
   getVolumeStatus(callback) {
     cockpit.spawn(
-      // ["vdsm-client", "--gluster-enabled", "GlusterVolume", "status", "volumeName=all"]
-      ["cat","/home/admin/dummy_2.txt"]
+      ["vdsm-client", "--gluster-enabled", "GlusterVolume", "status", "volumeName=all"]
+      // ["cat","/home/admin/dummy_2.txt"]
     ).done(function(volumeStatusList){
       callback(JSON.parse(volumeStatusList))
     }).fail(function(err){
@@ -100,10 +100,10 @@ class GlusterManagement extends Component {
 
   getVolumeInfo(callback) {
     cockpit.spawn(
-      // ["vdsm-client", "--gluster-enabled", "GlusterVolume", "list"]
-      ["cat","/home/admin/dummy_3.txt"]
+      ["vdsm-client", "--gluster-enabled", "GlusterVolume", "list"]
+      // ["cat","/home/admin/dummy_3.txt"]
     ).done(function(volumeInfoList){
-      console.log(JSON.parse(volumeInfoList))
+      // console.log(JSON.parse(volumeInfoList))
       callback(JSON.parse(volumeInfoList))
     }).fail(function(err){
       console.log("Error while fetching volume info: ", err);
@@ -118,10 +118,12 @@ class GlusterManagement extends Component {
     })
     }
   handleCreateVolume(){
-  window.top.location.href='/ovirt-dashboard#/create_gluster_volume';
+  // window.top.location.href='/ovirt-dashboard#/create_gluster_volume';
+
   }
   handleExpandCluster(){
-  window.top.location.href='/ovirt-dashboard#/expand_cluster';
+  cockpit.jump('/ovirt-dashboard#/expand_cluster');
+  // window.top.location.href='/ovirt-dashboard#/expand_cluster';
   }
   startGlusterManagement(action) {
       //set the relevant wizard to MANAGE
@@ -329,7 +331,7 @@ class GlusterManagement extends Component {
               </ul>
               <div className="manageGlusterButtons">
                 {/* <button onClick={this.startGlusterManagement.bind(this, 'expand_cluster')}>Expand Cluster</button> */}
-                <button onClick={this.handleExpandCluster}>Expand Cluster</button>
+                <button onClick={()=>{cockpit.jump('/ovirt-dashboard#/expand_cluster');}}>Expand Cluster</button>
               </div>
             </div>
             <div className="volumeList">
@@ -363,7 +365,7 @@ class GlusterManagement extends Component {
               </ul>
               <div className="manageGlusterButtons">
                 {/* <button onClick={this.startGlusterManagement.bind(this, 'create_volume')} >Create Volume</button> */}
-                <button onClick={this.handleCreateVolume} >Create Volume</button>
+                <button onClick={()=>{cockpit.jump('/ovirt-dashboard#/create_gluster_volume');}} >Create Volume</button>
               </div>
             </div>
             <div className="modal fade" id="about-modal" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
