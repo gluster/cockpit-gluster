@@ -1,6 +1,7 @@
-*node_modules
-/notes.txt
 .vagrant/
+build_dir/
 dist/
-build_dir
-rpm_build
+dummy_*.txt.bak
+node_modules/
+notes.txt
+rpm_build/
