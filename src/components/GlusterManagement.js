@@ -1,5 +1,5 @@
-import React, { Component } from 'react'
 import Redirect from 'react-router'
+import React, { Component } from 'react'
 // import GdeploySetup from './gdeploy/GdeploySetup'
 
 const classNames = require('classnames');
@@ -29,39 +29,51 @@ class GlusterManagement extends Component {
     this.startGlusterManagement = this.startGlusterManagement.bind(this);
     this.applyGlusterChanges = this.applyGlusterChanges.bind(this);
     this.abortCallback = this.abortCallback.bind(this);
+    this.updateGlusterInfo = this.updateGlusterInfo.bind(this);
   }
+  //TODO: make the auto-refresh interval much longer after adding a manual refresh
+  //and making any wizard-close events trigger a refresh.
+    componentDidMount() {
+      this.glusterTimerId = setInterval(this.updateGlusterInfo, 30000);
+    }
 
-  componentDidMount() {
-    let that = this
-    this.getHostList(function (hostJson) {
-      that.getVolumeStatus(function (volumeStatusJson) {
-        that.getVolumeInfo(function (volumeInfoJson) {
-          let volumeBricks = {}
-          if(Object.keys(volumeInfoJson).length != 0 && Object.keys(volumeStatusJson).length != 0) {
-            Object.keys(volumeInfoJson.volumes).forEach(function (volume) {
-              volumeBricks[volume] = []
-              // Object.values(volumeStatusJson.volumeStatus.bricks).forEach(function (brick) {
-              volumeStatusJson.volumeStatus.bricks.forEach(function (brick) {
-                if(brick.brick.match(volume)) {
-                  volumeBricks[volume].push(brick)
-                }
+    componentWillUnmount(){
+      clearInterval(this.glusterTimerId);
+    }
+    //TODO: split this and make it return state instead of setting it
+    //updateHostInfo(), updateVolumeInfo, updateVolumeStatus, updateGlusterInfo
+    updateGlusterInfo(){
+      console.log("Updating Gluster Info")
+      let that = this
+      this.getHostList(function (hostJson) {
+        that.getVolumeStatus(function (volumeStatusJson) {
+          that.getVolumeInfo(function (volumeInfoJson) {
+            let volumeBricks = {}
+            if(Object.keys(volumeInfoJson).length != 0 && Object.keys(volumeStatusJson).length != 0) {
+              Object.keys(volumeInfoJson.volumes).forEach(function (volume) {
+                volumeBricks[volume] = []
+                Object.values(volumeStatusJson.volumeStatus.bricks).forEach(function (brick) {
+                  if(brick.brick.match(volume)) {
+                    volumeBricks[volume].push(brick)
+                  }
+                })
               })
+            }
+            that.setState({
+              host: hostJson,
+              hostStatus: true,
+              volumeStatus: volumeStatusJson,
+              volumeStatusStatus: true,
+              volumeInfo: volumeInfoJson,
+              volumeInfoStatus: true,
+              volumeBricks: volumeBricks,
+              volumeBricksStatus: true
             })
-          }
-          that.setState({
-            host: hostJson,
-            hostStatus: true,
-            volumeStatus: volumeStatusJson,
-            volumeStatusStatus: true,
-            volumeInfo: volumeInfoJson,
-            volumeInfoStatus: true,
-            volumeBricks: volumeBricks,
-            volumeBricksStatus: true
           })
         })
       })
-    })
-  }
+    }
+
 
   getHostList(callback){
     cockpit.spawn(
@@ -119,7 +131,7 @@ class GlusterManagement extends Component {
     }
   handleCreateVolume(){
   // window.top.location.href='/ovirt-dashboard#/create_gluster_volume';
-
+cockpit.jump('/ovirt-dashboard#/create_gluster_volume');
   }
   handleExpandCluster(){
   cockpit.jump('/ovirt-dashboard#/expand_cluster');
