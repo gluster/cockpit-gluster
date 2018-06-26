@@ -1,4 +1,4 @@
-%global _plugindir %{_datarootdir}/cockpit/
+%global _plugindir %{_datarootdir}/cockpit
 
 Name: cockpit-gluster
 Version: 0.1
@@ -11,6 +11,7 @@ Source0:        https://example.com/%{name}/release/%{name}-%{version}.tar.gz
 
 BuildArch:      noarch
 
+Prefix: %{_plugindir}
 %description
 A Cockpit plugin to deploy and manage Gluster
 
@@ -19,10 +20,11 @@ A Cockpit plugin to deploy and manage Gluster
 %setup -q
 
 %install
-mkdir -p %{_plugindir}gluster-management/
+echo Install prefix is %{_plugindir}
+mkdir -p %{_plugindir}/gluster-management/
 mkdir -p %{buildroot}/%{_plugindir}/gluster-management/
 install -m 744 dist/* -t %{buildroot}/%{_plugindir}/gluster-management/
-install -m 744 dist/* -t %{_plugindir}gluster-management/
+install -m 744 dist/* -t %{_plugindir}/gluster-management/
 
 %files
-%{_plugindir}gluster-management
+%{_plugindir}/gluster-management

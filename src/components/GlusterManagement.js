@@ -2,7 +2,7 @@ import Redirect from 'react-router'
 import React, { Component } from 'react'
 // import GdeploySetup from './gdeploy/GdeploySetup'
 
-const classNames = require('classnames');
+//const classNames = require('classnames');
 
 class GlusterManagement extends Component {
 
@@ -34,7 +34,8 @@ class GlusterManagement extends Component {
   //TODO: make the auto-refresh interval much longer after adding a manual refresh
   //and making any wizard-close events trigger a refresh.
     componentDidMount() {
-      this.glusterTimerId = setInterval(this.updateGlusterInfo, 30000);
+      this.updateGlusterInfo();
+      this.glusterTimerId = setInterval(this.updateGlusterInfo, 300000);
     }
 
     componentWillUnmount(){
@@ -46,18 +47,37 @@ class GlusterManagement extends Component {
       console.log("Updating Gluster Info")
       let that = this
       this.getHostList(function (hostJson) {
-        that.getVolumeStatus(function (volumeStatusJson) {
-          that.getVolumeInfo(function (volumeInfoJson) {
-            let volumeBricks = {}
+        that.getVolumeInfo(function (volumeInfoJson) {
+          that.getVolumeStatus(function (volumeStatusJson) {
+            let brickStatusByVolume = {};
             if(Object.keys(volumeInfoJson).length != 0 && Object.keys(volumeStatusJson).length != 0) {
-              Object.keys(volumeInfoJson.volumes).forEach(function (volume) {
-                volumeBricks[volume] = []
-                Object.values(volumeStatusJson.volumeStatus.bricks).forEach(function (brick) {
-                  if(brick.brick.match(volume)) {
-                    volumeBricks[volume].push(brick)
+
+
+              for (var volume of Object.keys(volumeInfoJson.volumes)) {
+                brickStatusByVolume[volume] = [];
+
+                //find all the matching bricks
+                for (var brickStatus of volumeStatusJson.volumeStatus.bricks) {
+                  //unreliable test? depends on names...
+                  // if(volumeStatusBrick.brick.match(volume)) {
+                  //   brickStatusByVolume[volume].push(volumeStatusBrick)
+                  // }
+                  //
+                  for (var volumeBrick of volumeInfoJson.volumes[volume].bricks){
+                    console.log(volumeBrick + "?=" + brickStatus.brick);
+                    if (volumeBrick == brickStatus.brick) {
+                      brickStatusByVolume[volume].push(brickStatus);
+                      break;
+                     }
                   }
-                })
-              })
+                }
+
+
+
+              } //volumeInfoJson.volumes
+
+
+
             }
             that.setState({
               host: hostJson,
@@ -66,12 +86,17 @@ class GlusterManagement extends Component {
               volumeStatusStatus: true,
               volumeInfo: volumeInfoJson,
               volumeInfoStatus: true,
-              volumeBricks: volumeBricks,
+              volumeBricks: brickStatusByVolume,
               volumeBricksStatus: true
             })
           })
         })
       })
+    }
+
+
+    updateGlusterInfo2(){
+
     }
 
 
@@ -131,7 +156,7 @@ class GlusterManagement extends Component {
     }
   handleCreateVolume(){
   // window.top.location.href='/ovirt-dashboard#/create_gluster_volume';
-cockpit.jump('/ovirt-dashboard#/create_gluster_volume');
+  cockpit.jump('/ovirt-dashboard#/create_gluster_volume');
   }
   handleExpandCluster(){
   cockpit.jump('/ovirt-dashboard#/expand_cluster');
@@ -166,7 +191,7 @@ cockpit.jump('/ovirt-dashboard#/create_gluster_volume');
     let modalWindow = null
     let options = null
 
-    //generate hosts table
+    //generate hosts table list
     if (Object.keys(this.state.host).length != 0) {
         hostsTable = []
         this.state.host.hosts.forEach(function(host, index) {
@@ -213,7 +238,8 @@ cockpit.jump('/ovirt-dashboard#/create_gluster_volume');
         }, this)
       }
     }
-    //modalwindow displays volumeinfo as a list of key values on the expanded volume
+    //volumeinfotable
+    //modalwindow displays volumeinfo as a list of key-values pairs on the relevant volume
     if (this.state.volumeSelectedRow != 'None') {
       if (Object.keys(this.state.volumeInfo).length != 0) {
         modalWindow = []

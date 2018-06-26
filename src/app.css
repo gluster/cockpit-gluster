@@ -139,9 +139,14 @@ div.curtains-with-footer {
     background-color: #0099d3;
 }
 
+.container-fluid{
+  margin-left: 4%;
+}
+
 #content {
-    margin-left: 90px;
+    margin-left: 4%;
     margin-right: 0px;
+    margin-top:20px;
     min-height: 100%;
 }
 
