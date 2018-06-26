@@ -3,6 +3,6 @@ build_dir/
 dist/
 dummy_*.txt.bak
 node_modules/
-notes.txt
+notes
 rpm_build/
 *.swp
