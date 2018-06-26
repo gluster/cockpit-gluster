@@ -5,3 +5,4 @@ dummy_*.txt.bak
 node_modules/
 notes.txt
 rpm_build/
+*.swp
