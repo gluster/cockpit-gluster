@@ -40,7 +40,6 @@ class GlusterManagement2 extends Component {
         that.updateVolumeInfo(
           function (volumeInfo){
             commonGlusterState["volumeInfo"] = volumeInfo;
-            console.log(volumeInfo);
             that.setState(commonGlusterState);
           });
       }
@@ -70,14 +69,9 @@ class GlusterManagement2 extends Component {
     cockpit.spawn(["vdsm-client", "--gluster-enabled", "GlusterVolume", "list"])
     .done(
       function (volumeInfoJson){
-        let volumeInfo = JSON.parse(volumeInfoJson);
-        for(let volumeName of Object.keys(volumeInfo.volumes)){
-          that.getVolumeStatus(volumeName, function(volumeStatus){
-            //replaces the brick-name string list with a brick-status object list.
-            volumeInfo.volumes[volumeName].bricks = volumeStatus.volumeStatus.bricks;
-          });//end getVolumeStatus
-          callback(volumeInfo.volumes);
-        }
+        var volumeInfo = JSON.parse(volumeInfoJson);
+        // console.log(volumeInfo.volumes["engine"].bricks);
+        callback(volumeInfo.volumes);
       }
     )
     .fail(
@@ -107,12 +101,12 @@ class GlusterManagement2 extends Component {
         <div className="container-fluid">
           <h2 className="title">Gluster Management</h2>
           <div className="row">
-            <div className="col-11 col-sm-7 col-md 6">
+            <div className="col-12">
               {this.state.hostList && <HostsTable hostList={this.state.hostList} />}
             </div>
           </div>
           <div className="row">
-            <div className="col-11 col-sm-7 col-md 6">
+            <div className="col-12">
               {this.state.volumeInfo && <VolumeTable volumeInfo={this.state.volumeInfo} />}
             </div>
           </div>
@@ -165,64 +159,21 @@ class HostsTable extends Component{
 class VolumeTable extends Component{
   constructor(props){
     super(props);
+    //generate volumeTableRows
     this.volumeTableRows = [];
-    this.volumeTableHeadings =[];
-
-    this.volumeBricksTableHeadings=[];
-    // for (let heading of Object.keys(props.hostList)){
-    for (let heading of ["Name","Volume Type","Status"]){
-      this.volumeTableHeadings.push(
-        <th key={heading}>{heading}</th>
-      )
-    }
-    //,"Arbiter"
-    for (let heading of ["Brick","Status"]){
-      this.volumeBricksTableHeadings.push(
-        <th key={heading}>{heading}</th>
-      )
-    }
-
     for(let volumeName in props.volumeInfo){
-      let volumeBricksTableRows=[];
       let volume = props.volumeInfo[volumeName];
-      for(let brick of volume.bricks){
-        volumeBricksTableRows.push(
-          <tr key={brick.brick}>
-            <td>{brick.brick}</td>
-            <td>{brick.status}</td>
-            {/* <td>{brick.isArbiter.toString()}</td> */}
-          </tr>
-        );
-      }
       this.volumeTableRows.push(
           <tr key={volume.uuid}>
+            <td className="volume-expando"><span className="fa fa-angle-down volume-expando"></span></td>
             <td>{volume.volumeName}</td>
             <td>{volume.volumeType}</td>
             <td>{volume.volumeStatus}</td>
           </tr>
       );
-      if (props.volumeSelectedRow==volume.uuid){
-        this.volumeTableRows.push(
-          <tr>
-            <div className="panel panel-default">
-              <div className="panel-heading">Volume Bricks</div>
-              <table className="table">
-                <thead>
-                  <tr>
-                    {this.volumeTableHeadings}
-                  </tr>
-                </thead>
-                <tbody>
-                  {this.volumeTableRows}
-                </tbody>
-              </table>
-            </div>
-          </tr>
-        );
-      }
     }
+  }//done generating volumeTableRows
 
-  }
   render(){
     return(
       <div className="panel panel-default">
@@ -231,7 +182,10 @@ class VolumeTable extends Component{
         <table className="table table-hover">
           <thead>
             <tr>
-              {this.volumeTableHeadings}
+              <th className="volume-expando"></th>
+              <th>Name</th>
+              <th>Volume Type</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
