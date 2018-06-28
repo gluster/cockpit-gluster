@@ -15,7 +15,14 @@
 .panel-heading{
   font-size: 1.2em;
 }
+tr.no-highlight:hover, td.no-highlight:hover{
+  color:inherit;
+  background-color: inherit;
 
+}
+.table tbody tr td:last-child, .table thead tr th:last-child.no-highlight, tr.no-highlight, td.no-highlight{
+  padding:0px;
+}
 
 
 th.volume-expando,td.volume-expando{
