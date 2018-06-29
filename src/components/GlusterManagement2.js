@@ -264,7 +264,6 @@ class VolumeTable extends Component{
     return(
       <div className="panel panel-default">
         <div className="panel-heading">Volumes</div>
-
         <table className="table table-hover">
           <thead>
             <tr>

@@ -20,16 +20,15 @@ tr.no-highlight:hover, td.no-highlight:hover{
   background-color: inherit;
 
 }
-.table tbody tr td:last-child, .table thead tr th:last-child.no-highlight, tr.no-highlight, td.no-highlight{
-  padding:0px;
-}
 
 
-th.volume-expando,td.volume-expando{
+/* th.volume-expando,td.volume-expando{
   width:30px;
-}
-span.volume-expando{
+} */
+th.volume-expando, td.volume-expando{
+  box-sizing: content-box; 
   font-size: 20px;
+  width: 20px;
 }
 
 .fa {
