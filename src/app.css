@@ -64,3 +64,9 @@ span.action-btn{
 .modal-body td, .modal-body th{
   padding:8px;
 }
+.object-modal-btn{
+  background-color:#4d525813;
+  color: #00659c;
+  padding-left: 7px;
+  padding-right:7px;
+}

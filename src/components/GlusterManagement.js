@@ -205,13 +205,20 @@ class VolumeBricksTable extends Component{
   }
   generateTable(){
     this.volumeBricksTableRows = [];
+    this.brickMoreInfoModals = [];
+    let counter = 0;
     for(let brick of this.props.volumeBrickList){
+      counter++;
       this.volumeBricksTableRows.push(
         <tr key={brick.brick}>
           <td>{brick.brick}</td>
           <td>{brick.hostuuid}</td>
           <td>{brick.status}</td>
+          <td><ObjectModalButton modalId={"brick-"+counter}/></td>
         </tr>);
+        this.brickMoreInfoModals.push(
+          <ObjectModal key={brick.brick} title={"More info: "+brick.brick}  modalId={"brick-"+counter} modalObject={brick} />
+        );
     }
   }
   render(){
@@ -224,12 +231,14 @@ class VolumeBricksTable extends Component{
               <th>Brick</th>
               <th>Host UUID</th>
               <th>Status</th>
+              <th>More Info</th>
             </tr>
           </thead>
           <tbody>
             {this.volumeBricksTableRows}
           </tbody>
         </table>
+        {this.brickMoreInfoModals}
       </div>
     )
   }
@@ -261,6 +270,7 @@ class VolumeTable extends Component{
         <ObjectModal key={volume.uuid} modalObject={volume} title={"More Info: "+volumeName} modalId={volume.uuid}/>
       );
       if(expanded){
+        //TODO: pass the volume.bricksInfo brickinfo so it can be displayed in the modal
         this.volumeTableRows.push(
           <tr className="no-highlight" key={volumeName+"-brick-status"}>
             <td className="no-highlight" colSpan="100">
@@ -375,7 +385,7 @@ class ObjectModal extends Component {
 
 function ObjectModalButton(props){
   return (
-    <button className="btn btn-link btn-find" title="More Info" type="button" data-toggle="modal" data-target={"#"+props.modalId}>
+    <button className="btn btn-find object-modal-btn" title="More Info" type="button" data-toggle="modal" data-target={"#"+props.modalId}>
       <span className="fa fa-lg fa-info-circle"></span>
     </button>
   );
