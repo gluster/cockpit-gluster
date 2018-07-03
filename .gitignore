@@ -1,8 +1,12 @@
-.vagrant/
+
 build_dir/
 dist/
-dummy_*.txt.bak
 node_modules/
-notes
+notes/
 rpm_build/
-*.swp
+
+VagrantFile
+dashboard/dist/
+notes/
+tpjsm_setup_env.sh
+.vagrant/

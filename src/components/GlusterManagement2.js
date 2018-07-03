@@ -16,44 +16,45 @@ class GlusterManagement2 extends Component {
       gdeployWizardType: ""
     };
     //Binding "this" of the component to "this" of the component
-    this.updateGlusterInfo = this.updateGlusterInfo.bind(this);
-    this.updateHostInfo = this.updateHostInfo.bind(this);
     this.updateVolumeInfo = this.updateVolumeInfo.bind(this);
-    this.updateVolumeStatus= this.updateVolumeStatus.bind(this);
+    this.updateHostInfo = this.updateHostInfo.bind(this);
+    this.getHostInfo = this.getHostInfo.bind(this);
+    this.getVolumeInfo = this.getVolumeInfo.bind(this);
+    this.getVolumeStatus= this.getVolumeStatus.bind(this);
     this.handleVolumeRowClick= this.handleVolumeRowClick.bind(this);
-
   }
   componentDidMount(){
 
-    this.updateGlusterInfo();
+    this.updateHostInfo();
+    this.updateVolumeInfo();
     // this.glusterInterval = setInterval(this.updateGlusterInfo)
   }
 
   componentWillUnmount(){
 
   }
-
-  updateGlusterInfo(){
+  updateHostInfo(){
     let that = this;
-    let commonGlusterState = {};
-    that.updateHostInfo(
+    that.getHostInfo(
       function (hostList){
-        commonGlusterState["hostList"] = hostList;
-        that.setState({hostList:hostList})
+        that.setState({hostList:hostList});
       }
     );
-    that.updateVolumeInfo(
+  }
+  updateVolumeInfo(){
+    let that = this;
+    that.getVolumeInfo(
       function (volumeInfo){
         that.setState({volumeInfo:volumeInfo});
-    });
-
+      }
+    );
   }
 
-  updateHostInfo(callback){
+
+  getHostInfo(callback){
     cockpit.spawn([ "vdsm-client", "--gluster-enabled", "GlusterHost", "list" ])
     .done(
       function (hostListJson){
-        // console.log(hostListJson);
         let hostList = JSON.parse(hostListJson).hosts;
         callback(hostList);
       }
@@ -66,13 +67,12 @@ class GlusterManagement2 extends Component {
     );
   }
 
-  updateVolumeInfo(callback){
+  getVolumeInfo(callback){
     let that = this;
     cockpit.spawn(["vdsm-client", "--gluster-enabled", "GlusterVolume", "list"])
     .done(
       function (volumeInfoJson){
         var volumeInfo = JSON.parse(volumeInfoJson);
-        // console.log(volumeInfo.volumes["engine"].bricks);
         callback(volumeInfo.volumes);
       }
     )
@@ -84,7 +84,7 @@ class GlusterManagement2 extends Component {
     );
   }
 
-  updateVolumeStatus(volumeName,callback){
+  getVolumeStatus(volumeName,callback){
     cockpit.spawn(["vdsm-client", "--gluster-enabled", "GlusterVolume", "status", "volumeName="+volumeName])
     .done(
       (volumeStatusJson) => callback(JSON.parse(volumeStatusJson).volumeStatus)
@@ -107,7 +107,7 @@ class GlusterManagement2 extends Component {
       }
       else{
         prevState.selectedVolumes[volumeName]="fetching";
-        that.updateVolumeStatus(volumeName, function(volumeStatus){
+        that.getVolumeStatus(volumeName, function(volumeStatus){
           that.setState(function(prevState,props){
             if(prevState.volumeStatus == null){
               prevState.volumeStatus = {};
@@ -124,19 +124,18 @@ class GlusterManagement2 extends Component {
   }
 
   render(){
-    console.log("hostList:",this.state.hostList);
     return(
       <div>
-        <div className="container-fluid">
+        <div className="container-fluid gluster-management">
           <h2 className="title">Gluster Management</h2>
           <div className="row">
             <div className="col-12">
-              {this.state.hostList !== null && <HostsTable hostList={this.state.hostList} />}
+              {this.state.hostList !== null && <HostsTable hostList={this.state.hostList} handleRefresh={this.updateHostInfo} />}
             </div>
           </div>
           <div className="row">
             <div className="col-12">
-              {this.state.volumeInfo !== null && <VolumeTable volumeInfo={this.state.volumeInfo} selectedVolumes={this.state.selectedVolumes} volumeStatus={this.state.volumeStatus} handleVolumeRowClick={this.handleVolumeRowClick}/>}
+              {this.state.volumeInfo !== null && <VolumeTable volumeInfo={this.state.volumeInfo} selectedVolumes={this.state.selectedVolumes} volumeStatus={this.state.volumeStatus} handleRefresh={this.updateVolumeInfo} handleVolumeRowClick={this.handleVolumeRowClick}/>}
             </div>
           </div>
         </div>
@@ -169,12 +168,22 @@ class HostsTable extends Component{
     }
   }
   render(){
-    console.log("Rendering HostsTable");
     this.generateTable();
     return(
       <div className="panel panel-default">
-        <div className="panel-heading">Hosts</div>
-
+        <div className="panel-heading">
+          Hosts
+          <button className="btn btn-default refresh-btn"
+            onClick={this.props.handleRefresh}>
+            <span className="fa fa-refresh"/>
+          </button>
+          <span className="action-btn">
+            <button className="btn btn-default action-btn"
+              onClick={()=>{cockpit.jump('/ovirt-dashboard#/expand_cluster')}}>
+              Expand Cluster
+            </button>
+          </span>
+        </div>
         <table className="table">
           <thead>
             <tr>{this.hostTableHeadings}</tr>
@@ -235,7 +244,7 @@ class VolumeTable extends Component{
     this.volumeTableRows = [];
     for(let volumeName in this.props.volumeInfo){
       let volume = this.props.volumeInfo[volumeName];
-      let expanded = this.props.selectedVolumes.hasOwnProperty(volumeName) && this.props.volumeStatus !== null && this.props.volumeStatus[volumeName] !== undefined;
+      let expanded = this.props.selectedVolumes.hasOwnProperty(volumeName) && this.props.volumeStatus !== null && this.props.volumeStatus[volumeName] !== null && this.props.volumeStatus[volumeName] !== undefined;
       this.volumeTableRows.push(
           <tr key={volume.uuid} onClick={()=>{this.props.handleVolumeRowClick(volumeName)}}>
             <td className="volume-expando">{expanded && <span className="fa fa-angle-down volume-expando"></span>}{!expanded && <span className="fa fa-angle-right volume-expando"></span>}</td>
@@ -257,13 +266,23 @@ class VolumeTable extends Component{
   }
 
   render(){
-    // console.log("VolumeTable rendered.");
-    // console.log("Volume Status: ",this.props.volumeStatus);
-    // console.log("selectedVolumes: ",this.props.selectedVolumes);
     this.generateTable();
     return(
       <div className="panel panel-default">
-        <div className="panel-heading">Volumes</div>
+        <div className="panel-heading">
+          Volumes
+          <button
+            className="btn btn-default refresh-btn"
+            onClick={this.props.handleRefresh}>
+            <span className="fa fa-refresh"/>
+          </button>
+          <span className="action-btn">
+            <button className="btn btn-default action-btn"
+              onClick={()=>{cockpit.jump('/ovirt-dashboard #/create_volume')}}>
+              Create Volume
+            </button>
+          </span>
+        </div>
         <table className="table table-hover">
           <thead>
             <tr>

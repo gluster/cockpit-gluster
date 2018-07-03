@@ -7,42 +7,6 @@
     padding-left: 0px;
 }
 
-.container-fluid{
-  margin-left: 4%;
-  margin-right: 2%;
-}
-
-.panel-heading{
-  font-size: 1.2em;
-}
-tr.no-highlight:hover, td.no-highlight:hover{
-  color:inherit;
-  background-color: inherit;
-
-}
-
-
-/* th.volume-expando,td.volume-expando{
-  width:30px;
-} */
-th.volume-expando, td.volume-expando{
-  box-sizing: content-box; 
-  font-size: 20px;
-  width: 20px;
-}
-
-.fa {
-    display: inline;
-    /* font-size: 20px; */
-}
-.fa-caret-up.statusIcon {
-    color: green;
-}
-
-.fa-caret-down.statusIcon {
-    color: red;
-}
-
 /* HACK: https://github.com/patternfly/patternfly/issues/75 */
 .blank-slate-pf .fa {
     color: #999999;
@@ -51,4 +15,52 @@ th.volume-expando, td.volume-expando{
 .blank-slate-pf .spinner-lg {
     height: 58px;
     width: 58px;
+}
+
+/*Custom*/
+
+.container-fluid.gluster-management{
+  margin-left: 4%;
+  margin-right: 2%;
+}
+
+.panel-heading{
+  font-size: 1.2em;
+}
+
+
+
+ .highlight-ct, .table-hover > tbody > tr.no-highlight:hover > td, .table-hover > tbody > tr.no-highlight:hover > td,
+ .highlight-ct, .table-hover > tbody > tr.no-highlight:hover > td, .table-hover > tbody > tr.no-highlight:hover > th
+ .highlight-ct, .table-hover > tbody > tr.no-highlight > td, .table-hover > tbody > tr.no-highlight > td,
+ .highlight-ct, .table-hover > tbody > tr.no-highlight > td, .table-hover > tbody > tr.no-highlight > th
+{
+  background-color: #f5f5f5;
+}
+
+
+/* th.volume-expando,td.volume-expando{
+  width:30px;
+} */
+th.volume-expando, td.volume-expando{
+  box-sizing: content-box;
+  font-size: 20px;
+  width: 20px;
+}
+
+.fa {
+    display: inline;
+    /* font-size: 20px; */
+}
+
+button.refresh-btn{
+  margin-left: 10px;
+}
+
+span.action-btn{
+  float: inline-end;
+}
+
+.modal-body td, .modal-body th{
+  padding:8px;
 }
