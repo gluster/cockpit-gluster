@@ -165,8 +165,8 @@ class HostsTable extends Component{
         <tr key={host.uuid}>
           <td>{host.hostname}</td>
           <td>{host.status}</td>
-          <td>{host.uuid}
-        </td></tr>);
+          <td>{host.uuid}</td>
+        </tr>);
     }
   }
   render(){
@@ -206,18 +206,21 @@ class VolumeBricksTable extends Component{
   generateTable(){
     this.volumeBricksTableRows = [];
     this.brickMoreInfoModals = [];
-    let counter = 0;
+    let modalCounter = 0;
     for(let brick of this.props.volumeBrickList){
-      counter++;
+      modalCounter++;
       this.volumeBricksTableRows.push(
         <tr key={brick.brick}>
           <td>{brick.brick}</td>
           <td>{brick.hostuuid}</td>
-          <td>{brick.status}</td>
-          <td><ObjectModalButton modalId={"brick-"+counter}/></td>
+          <td>
+            {brick.status == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> }
+            {brick.status}
+          </td>
+          <td><ObjectModalButton modalId={"brick-"+modalCounter}/></td>
         </tr>);
         this.brickMoreInfoModals.push(
-          <ObjectModal key={brick.brick} title={"More info: "+brick.brick}  modalId={"brick-"+counter} modalObject={brick} />
+          <ObjectModal key={brick.brick} title={"More info: "+brick.brick}  modalId={"brick-"+modalCounter} modalObject={brick} />
         );
     }
   }
@@ -262,7 +265,10 @@ class VolumeTable extends Component{
             <td className="volume-expando">{expanded && <span className="fa fa-angle-down volume-expando"></span>}{!expanded && <span className="fa fa-angle-right volume-expando"></span>}</td>
             <td>{volumeName}</td>
             <td>{volume.volumeType}</td>
-            <td>{volume.volumeStatus}</td>
+            <td>
+              {volume.volumeStatus == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> }
+              {volume.volumeStatus}
+            </td>
             <td><ObjectModalButton modalId={volume.uuid}/></td>
           </tr>
       );

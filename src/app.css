@@ -70,3 +70,14 @@ span.action-btn{
   padding-left: 7px;
   padding-right:7px;
 }
+span.status-icon{
+  font-size:20px;
+  padding-right: 8px;
+}
+
+span.fa-arrow-circle-o-up.status-icon{
+  color:green;
+}
+span.fa-arrow-circle-o-down.status-icon{
+  color:red;
+}
