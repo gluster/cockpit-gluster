@@ -1,83 +1,85 @@
-
-
-
-
-.container-fluid {
-    margin-top: 0px;
-    padding-left: 0px;
+div.gluster-management .table > thead > tr > th,
+div.gluster-management .table > tbody > tr > th,
+div.gluster-management .table > tfoot > tr > th,
+div.gluster-management .table > thead > tr > td,
+div.gluster-management .table > tbody > tr > td,
+div.gluster-management .table > tfoot > tr > td
+{
+  padding:8px;
 }
 
-/* HACK: https://github.com/patternfly/patternfly/issues/75 */
-.blank-slate-pf .fa {
-    color: #999999;
+.gluster-management div.volume-bricks-table{
+  margin: 8px 0px;
 }
 
-.blank-slate-pf .spinner-lg {
-    height: 58px;
-    width: 58px;
+
+div.gluster-management .table > thead{
+  background-image: none;
+  background-color: inherit;
 }
 
-/*Custom*/
 
 .container-fluid.gluster-management{
   margin-left: 4%;
   margin-right: 2%;
 }
 
-.panel-heading{
+.gluster-management .panel-heading{
   font-size: 1.2em;
 }
 
 
-
- .highlight-ct, .table-hover > tbody > tr.no-highlight:hover > td, .table-hover > tbody > tr.no-highlight:hover > td,
- .highlight-ct, .table-hover > tbody > tr.no-highlight:hover > td, .table-hover > tbody > tr.no-highlight:hover > th
- .highlight-ct, .table-hover > tbody > tr.no-highlight > td, .table-hover > tbody > tr.no-highlight > td,
- .highlight-ct, .table-hover > tbody > tr.no-highlight > td, .table-hover > tbody > tr.no-highlight > th
+  .table-hover.gluster-management > tbody > tr.no-highlight:hover > td, .table-hover > tbody > tr.no-highlight:hover > td,
+  .table-hover.gluster-management > tbody > tr.no-highlight:hover > td, .table-hover > tbody > tr.no-highlight:hover > th
+  .table-hover.gluster-management > tbody > tr.no-highlight > td, .table-hover > tbody > tr.no-highlight > td,
+ .table-hover.gluster-management > tbody > tr.no-highlight > td, .table-hover > tbody > tr.no-highlight > th
 {
   background-color: #f5f5f5;
+  cursor: default;
 }
 
-
-/* th.volume-expando,td.volume-expando{
-  width:30px;
-} */
 th.volume-expando, td.volume-expando{
   box-sizing: content-box;
   font-size: 20px;
   width: 20px;
 }
 
-.fa {
+.gluster-management .fa {
     display: inline;
-    /* font-size: 20px; */
 }
 
 button.refresh-btn{
   margin-left: 10px;
 }
 
-span.action-btn{
-  float: inline-end;
-}
-
-.modal-body td, .modal-body th{
+.object-modal td, .object-modal th{
   padding:8px;
 }
+
 .object-modal-btn{
-  background-color:#4d525813;
+  background-color:transparent;
   color: #00659c;
   padding-left: 7px;
   padding-right:7px;
 }
-span.status-icon{
+
+.object-modal-btn:hover{
+  text-decoration: none;
+}
+
+.gluster-management span.status-icon{
   font-size:20px;
   padding-right: 8px;
 }
 
-span.fa-arrow-circle-o-up.status-icon{
+.gluster-management span.fa-arrow-circle-o-up.status-icon{
   color:green;
 }
-span.fa-arrow-circle-o-down.status-icon{
+
+.gluster-management span.fa-arrow-circle-o-down.status-icon{
   color:red;
+}
+
+.gluster-management .title{
+  margin-bottom: 27px;
 }
