@@ -9,7 +9,7 @@ class GlusterManagement extends Component {
       selectedVolumes: {},
       peerList: null,
       volumeBricks: null,
-      volumeInfo: null,
+      volumeList: null,
       volumeStatus: null,
       gdeployState: "",
       gdeployWizardType: ""
@@ -19,11 +19,13 @@ class GlusterManagement extends Component {
     //However, when nesting calls, it seems best to use "let that = this;"
     // and use  "that" in the inner nested calls.
     this.getPeers = this.getPeers.bind(this);
+    this.getVolumes = this.getVolumes.bind(this);
     this.handleVolumeRowClick= this.handleVolumeRowClick.bind(this);
   }
 
   componentDidMount(){
     this.getPeers();
+    this.getVolumes();
   }
 
   generateAuthHeader(){
@@ -49,6 +51,22 @@ class GlusterManagement extends Component {
           console.log(result);
           let peerList = JSON.parse(result);
           that.setState({"peerList":peerList});
+        })
+    .catch(function(reason){
+          console.log("Failed for reason: ", reason);
+        })
+    return promise
+  }
+  getVolumes(){
+    let that = this;
+    let headers = { "Authorization" : this.generateAuthHeader() };
+    console.log("headers", headers);
+    let promise =  this.gluster_api.get("/v1/volumes")
+    promise
+    .then(function(result){
+          console.log(result);
+          let volumeList = JSON.parse(result);
+          that.setState({"volumeList":volumeList});
         })
     .catch(function(reason){
           console.log("Failed for reason: ", reason);
@@ -104,15 +122,15 @@ class GlusterManagement extends Component {
           <div className="row">
             <div className="col-12">
               {
-                this.state.volumeInfo !== null &&
-                <VolumeTable volumeInfo={this.state.volumeInfo}
+                this.state.volumeList !== null &&
+                <VolumeTable volumeList={this.state.volumeList}
                   selectedVolumes={this.state.selectedVolumes}
                   volumeStatus={this.state.volumeStatus}
-                  handleRefresh={this.updateVolumeInfo}
+                  handleRefresh={this.getVolumes}
                   handleVolumeRowClick={this.handleVolumeRowClick}/>
               }
               {
-                this.state.volumeInfo == null &&
+                this.state.volumeList == null &&
                 <InlineAlert
                   message="We were unable to fetch volume data! Open the browser console for more info." />
               }
@@ -133,7 +151,7 @@ class HostsTable extends Component{
     this.hostTableRows = [];
     this.hostTableHeadings =[];
     this.moreInfoModals=[];
-    for (let heading of ["Name","Peer status","UUID","More Info"]){
+    for (let heading of ["Name","Peer status","ID","More Info"]){
       this.hostTableHeadings.push(
         <th key={heading}>{heading}</th>
       )
@@ -161,7 +179,7 @@ class HostsTable extends Component{
     return(
       <div className="panel panel-default">
         <div className="panel-heading">
-          Hosts
+          Peers
           <button className="btn btn-default refresh-btn"
             onClick={this.props.handleRefresh}>
             <span className="fa fa-refresh"/>
@@ -245,30 +263,29 @@ class VolumeTable extends Component{
   generateTable(){
     this.volumeTableRows = [];
     this.moreInfoModals=[];
-    for(let volumeName in this.props.volumeInfo){
-      let volume = this.props.volumeInfo[volumeName];
-      let expanded = this.props.selectedVolumes.hasOwnProperty(volumeName) && this.props.volumeStatus !== null && this.props.volumeStatus[volumeName] !== null && this.props.volumeStatus[volumeName] !== undefined;
+    for(let volume of this.props.volumeList){
+      let expanded = this.props.selectedVolumes.hasOwnProperty(volume.name) && this.props.volumeStatus !== null && this.props.volumeStatus[volume.name] !== null && this.props.volumeStatus[volume.name] !== undefined;
       this.volumeTableRows.push(
-          <tr key={volume.uuid} onClick={()=>{this.props.handleVolumeRowClick(volumeName)}}>
+          <tr key={volume.id} onClick={()=>{this.props.handleVolumeRowClick(volume.name)}}>
             <td className="volume-expando">{expanded && <span className="fa fa-angle-down volume-expando"></span>}{!expanded && <span className="fa fa-angle-right volume-expando"></span>}</td>
-            <td>{volumeName}</td>
-            <td>{volume.volumeType}{volume.isArbiter && " (ARBITER)"}</td>
+            <td>{volume.name}</td>
+            <td>{volume.type}{volume["arbiter-count"] > 0 && " (with Arbiter)"}</td>
             <td>
-              {volume.volumeStatus == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> }
-              {volume.volumeStatus}
+              {/* {volume.volumeStatus == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> } */}
+              {volume.State}
             </td>
-            <td><ObjectModalButton modalId={volume.uuid}/></td>
+            <td><ObjectModalButton modalId={volume.id}/></td>
           </tr>
       );
       this.moreInfoModals.push(
-        <ObjectModal key={volume.uuid} modalObject={volume} title={"More Info: "+volumeName} modalId={volume.uuid}/>
+        <ObjectModal key={volume.id} modalObject={volume} title={"Volume: "+volume.name} modalId={volume.id}/>
       );
       if(expanded){
         //TODO: pass the volume.bricksInfo brickinfo so it can be displayed in the modal
         this.volumeTableRows.push(
-          <tr className="no-highlight" key={volumeName+"-brick-status"}>
+          <tr className="no-highlight" key={volume.name+"-brick-status"}>
             <td className="no-highlight" colSpan="100">
-              <VolumeBricksTable volumeBrickList={this.props.volumeStatus[volumeName].bricks} />
+              <VolumeBricksTable volumeBrickList={this.props.volumeStatus[volume.name].bricks} />
             </td>
           </tr>
         );
