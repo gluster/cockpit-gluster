@@ -9,7 +9,7 @@ var CleanWebpackPlugin = require('clean-webpack-plugin')
 module.exports = {
   mode:"development",
   entry: [
-    './src/app.js'
+    './src/app.jsx'
   ],
   output: {
     libraryTarget: 'var',
@@ -20,12 +20,15 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /.jsx?$/,
         exclude: /node_modules/,
         use: { loader: "babel-loader" }
       },
       { test: /\.css$/, use: ["style-loader", "css-loader"] }
     ]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx']
   },
   plugins: [
     new CleanWebpackPlugin(['dist']),

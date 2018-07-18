@@ -11,6 +11,7 @@ Source0:        https://example.com/%{name}/release/%{name}-%{version}.tar.gz
 
 BuildArch:      noarch
 
+Requires: cockpit
 Prefix: %{_plugindir}
 %description
 A Cockpit plugin to deploy and manage Gluster

@@ -1,9 +1,7 @@
-
 import Redirect from 'react-router'
 import React, { Component } from 'react'
 
-class GlusterManagement2 extends Component {
-
+class GlusterManagement extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -15,7 +13,9 @@ class GlusterManagement2 extends Component {
       gdeployState: "",
       gdeployWizardType: ""
     };
-    //Binding "this" of the component to "this" of the component
+    //Binding "this" of the function to "this" of the component.
+    //However, when nesting calls, it seems best to use "let that = this;"
+    // and use  "that" in the inner nested calls.
     this.updateVolumeInfo = this.updateVolumeInfo.bind(this);
     this.updateHostInfo = this.updateHostInfo.bind(this);
     this.getHostInfo = this.getHostInfo.bind(this);
@@ -23,16 +23,12 @@ class GlusterManagement2 extends Component {
     this.getVolumeStatus= this.getVolumeStatus.bind(this);
     this.handleVolumeRowClick= this.handleVolumeRowClick.bind(this);
   }
-  componentDidMount(){
 
+  componentDidMount(){
     this.updateHostInfo();
     this.updateVolumeInfo();
-    // this.glusterInterval = setInterval(this.updateGlusterInfo)
   }
 
-  componentWillUnmount(){
-
-  }
   updateHostInfo(){
     let that = this;
     that.getHostInfo(
@@ -41,6 +37,7 @@ class GlusterManagement2 extends Component {
       }
     );
   }
+
   updateVolumeInfo(){
     let that = this;
     that.getVolumeInfo(
@@ -49,7 +46,6 @@ class GlusterManagement2 extends Component {
       }
     );
   }
-
 
   getHostInfo(callback){
     cockpit.spawn([ "vdsm-client", "--gluster-enabled", "GlusterHost", "list" ])
@@ -99,7 +95,6 @@ class GlusterManagement2 extends Component {
 
   handleVolumeRowClick(volumeName){
     let that = this;
-    // let newSelectedVolumes = this.state.selectedVolumes;
     this.setState(function(prevState, props){
       if(prevState.selectedVolumes.hasOwnProperty(volumeName)){
         delete prevState.selectedVolumes[volumeName];
@@ -130,29 +125,49 @@ class GlusterManagement2 extends Component {
           <h2 className="title">Gluster Management</h2>
           <div className="row">
             <div className="col-12">
-              {this.state.hostList !== null && <HostsTable hostList={this.state.hostList} handleRefresh={this.updateHostInfo} />}
+              {
+                this.state.hostList !== null &&
+                <HostsTable hostList={this.state.hostList}
+                  handleRefresh={this.updateHostInfo} />
+              }
+              {
+                this.state.hostList == null &&
+                <InlineAlert
+                  message="We were unable to fetch host data! Open the browser console for more info." />
+              }
             </div>
           </div>
           <div className="row">
             <div className="col-12">
-              {this.state.volumeInfo !== null && <VolumeTable volumeInfo={this.state.volumeInfo} selectedVolumes={this.state.selectedVolumes} volumeStatus={this.state.volumeStatus} handleRefresh={this.updateVolumeInfo} handleVolumeRowClick={this.handleVolumeRowClick}/>}
+              {
+                this.state.volumeInfo !== null &&
+                <VolumeTable volumeInfo={this.state.volumeInfo}
+                  selectedVolumes={this.state.selectedVolumes}
+                  volumeStatus={this.state.volumeStatus}
+                  handleRefresh={this.updateVolumeInfo}
+                  handleVolumeRowClick={this.handleVolumeRowClick}/>
+              }
+              {
+                this.state.hostList == null &&
+                <InlineAlert
+                  message="We were unable to fetch volume data! Open the browser console for more info." />
+              }
             </div>
           </div>
         </div>
       </div>
     )
   }
-
 }
 
 class HostsTable extends Component{
   constructor(props){
     super(props);
   }
+
   generateTable(){
     this.hostTableRows = [];
     this.hostTableHeadings =[];
-    // for (let heading of Object.keys(props.hostList)){
     for (let heading of ["Name","Peer status","UUID"]){
       this.hostTableHeadings.push(
         <th key={heading}>{heading}</th>
@@ -163,10 +178,11 @@ class HostsTable extends Component{
         <tr key={host.uuid}>
           <td>{host.hostname}</td>
           <td>{host.status}</td>
-          <td>{host.uuid}
-        </td></tr>);
+          <td>{host.uuid}</td>
+        </tr>);
     }
   }
+
   render(){
     this.generateTable();
     return(
@@ -177,7 +193,7 @@ class HostsTable extends Component{
             onClick={this.props.handleRefresh}>
             <span className="fa fa-refresh"/>
           </button>
-          <span className="action-btn">
+          <span className="pull-right">
             <button className="btn btn-default action-btn"
               onClick={()=>{cockpit.jump('/ovirt-dashboard#/expand_cluster')}}>
               Expand Cluster
@@ -201,47 +217,60 @@ class VolumeBricksTable extends Component{
   constructor(props){
     super(props);
   }
+
   generateTable(){
     this.volumeBricksTableRows = [];
+    this.brickMoreInfoModals = [];
+    let modalCounter = 0;
     for(let brick of this.props.volumeBrickList){
+      modalCounter++;
       this.volumeBricksTableRows.push(
         <tr key={brick.brick}>
           <td>{brick.brick}</td>
           <td>{brick.hostuuid}</td>
-          <td>{brick.status}</td>
+          <td>
+            {brick.status == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> }
+            {brick.status}
+          </td>
+          <td><ObjectModalButton modalId={"brick-"+modalCounter}/></td>
         </tr>);
+        this.brickMoreInfoModals.push(
+          <ObjectModal key={brick.brick} title={"More info: "+brick.brick}  modalId={"brick-"+modalCounter} modalObject={brick} />
+        );
     }
   }
+
   render(){
     this.generateTable()
     return(
-      <div className="panel panel-default">
+      <div className="panel panel-default volume-bricks-table">
         <table className="table">
           <thead>
             <tr>
               <th>Brick</th>
               <th>Host UUID</th>
               <th>Status</th>
+              <th>More Info</th>
             </tr>
           </thead>
           <tbody>
             {this.volumeBricksTableRows}
           </tbody>
         </table>
+        {this.brickMoreInfoModals}
       </div>
     )
   }
 }
 
-
 class VolumeTable extends Component{
   constructor(props){
     super(props);
-
   }
 
   generateTable(){
     this.volumeTableRows = [];
+    this.moreInfoModals=[];
     for(let volumeName in this.props.volumeInfo){
       let volume = this.props.volumeInfo[volumeName];
       let expanded = this.props.selectedVolumes.hasOwnProperty(volumeName) && this.props.volumeStatus !== null && this.props.volumeStatus[volumeName] !== null && this.props.volumeStatus[volumeName] !== undefined;
@@ -249,11 +278,19 @@ class VolumeTable extends Component{
           <tr key={volume.uuid} onClick={()=>{this.props.handleVolumeRowClick(volumeName)}}>
             <td className="volume-expando">{expanded && <span className="fa fa-angle-down volume-expando"></span>}{!expanded && <span className="fa fa-angle-right volume-expando"></span>}</td>
             <td>{volumeName}</td>
-            <td>{volume.volumeType}</td>
-            <td>{volume.volumeStatus}</td>
+            <td>{volume.volumeType}{volume.isArbiter && " (ARBITER)"}</td>
+            <td>
+              {volume.volumeStatus == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> }
+              {volume.volumeStatus}
+            </td>
+            <td><ObjectModalButton modalId={volume.uuid}/></td>
           </tr>
       );
+      this.moreInfoModals.push(
+        <ObjectModal key={volume.uuid} modalObject={volume} title={"More Info: "+volumeName} modalId={volume.uuid}/>
+      );
       if(expanded){
+        //TODO: pass the volume.bricksInfo brickinfo so it can be displayed in the modal
         this.volumeTableRows.push(
           <tr className="no-highlight" key={volumeName+"-brick-status"}>
             <td className="no-highlight" colSpan="100">
@@ -276,9 +313,9 @@ class VolumeTable extends Component{
             onClick={this.props.handleRefresh}>
             <span className="fa fa-refresh"/>
           </button>
-          <span className="action-btn">
+          <span className="pull-right">
             <button className="btn btn-default action-btn"
-              onClick={()=>{cockpit.jump('/ovirt-dashboard #/create_volume')}}>
+              onClick={()=>{cockpit.jump('/ovirt-dashboard#/create_gluster_volume')}}>
               Create Volume
             </button>
           </span>
@@ -290,19 +327,98 @@ class VolumeTable extends Component{
               <th>Name</th>
               <th>Volume Type</th>
               <th>Status</th>
+              <th>More Info</th>
             </tr>
           </thead>
           <tbody>
             {this.volumeTableRows}
           </tbody>
         </table>
+        {this.moreInfoModals}
       </div>
     )
   }
 }
 
+class ObjectModal extends Component {
+  constructor(props){
+    super(props);
+    //required props: title,id,modalObject
+  }
 
+  generateTable(){
+    this.rowList = [];
+    for(let key in this.props.modalObject){
+      var value = this.props.modalObject[key];
+      if (Array.isArray(value) && value.every((value)=> {return typeof(value) ==='string'})){
+        value = value.join(", ");
+      }
+      else if (typeof(value) === 'object') {
+        break;
+      }
+      else if (typeof(value.toString) === 'function'){
+        value = value.toString();
+      }
+      this.rowList.push(
+        <tr key={key}>
+          <td>{key}</td>
+          <td>{value}</td>
+        </tr>
+      );
+    }
+  }
 
+  render(){
+    this.generateTable();
+    return(
+      <div>
+        <div className="modal fade object-modal" id={this.props.modalId} tabIndex="-1" role="dialog" aria-labelledby={this.props.title}>
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h4 className="modal-title">{this.props.title} <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></h4>
 
+              </div>
+              <div className="modal-body object-modal" >
+                <table>
+                  <tbody>
+                    <tr>
+                      <th>Key</th>
+                      <th>Value</th>
+                    </tr>
+                    {this.rowList}
+                  </tbody>
+                </table>
+              </div>
+              <div className="modal-footer">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
 
-export default GlusterManagement2
+function ObjectModalButton(props){
+  function handleClick(event){
+    event.stopPropagation();
+    $("#"+props.modalId).modal({show:true,keyboard:true});
+  }
+  return (
+    <button className="btn btn-find btn-link object-modal-btn" title="More Info" type="button" onClick={handleClick}>
+      <span className="fa fa-lg fa-info-circle"></span>
+    </button>
+  );
+}
+
+function InlineAlert(props){
+  return(
+    <div className="alert alert-warning">
+      <span className="pficon pficon-warning-triangle-o"></span>
+      {props.message}
+    </div>
+
+  )
+}
+export default GlusterManagement

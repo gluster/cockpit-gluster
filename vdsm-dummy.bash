@@ -1,6 +1,5 @@
 #!/bin/bash
 user=tpjsm
-
 if [[ $2 = "GlusterHost" ]]
 then
   cat /home/${user}/dummy_1.txt
