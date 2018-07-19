@@ -7,10 +7,9 @@ class GlusterManagement extends Component {
     super(props);
     this.state = {
       selectedVolumes: {},
-      peerList: null,
+      peers: null,
       volumeBricks: null,
-      volumeList: null,
-      volumeStatus: null,
+      volumes: null,
       gdeployState: "",
       gdeployWizardType: ""
     };
@@ -49,14 +48,15 @@ class GlusterManagement extends Component {
     promise
     .then(function(result){
           console.log(result);
-          let peerList = JSON.parse(result);
-          that.setState({"peerList":peerList});
+          let peers = JSON.parse(result);
+          that.setState({"peers":peers});
         })
     .catch(function(reason){
           console.log("Failed for reason: ", reason);
         })
     return promise
   }
+
   getVolumes(){
     let that = this;
     let headers = { "Authorization" : this.generateAuthHeader() };
@@ -65,8 +65,30 @@ class GlusterManagement extends Component {
     promise
     .then(function(result){
           console.log(result);
-          let volumeList = JSON.parse(result);
-          that.setState({"volumeList":volumeList});
+          let volumes = JSON.parse(result);
+          that.setState({"volumes":volumes});
+        })
+    .catch(function(reason){
+          console.log("Failed for reason: ", reason);
+        })
+    return promise
+  }
+
+  getVolumeBricks(volumeName){
+    let that = this;
+    let headers = { "Authorization" : this.generateAuthHeader() };
+    let promise =  this.gluster_api.get("/v1/volumes/"+volumeName+"/bricks")
+    promise
+    .then(function(volumeBricksJson){
+          let volumeBrickList = JSON.parse(volumeBricksJson);
+          console.log(volumeBrickList);
+          that.setState(function(prevState, props){
+            if(prevState.volumeBricks == null){
+              prevState.volumeBricks = {};
+            }
+            prevState.volumeBricks[volumeName] = volumeBrickList;
+            return {"volumeBricks": prevState.volumeBricks}
+          });
         })
     .catch(function(reason){
           console.log("Failed for reason: ", reason);
@@ -84,14 +106,10 @@ class GlusterManagement extends Component {
       }
       else{
         prevState.selectedVolumes[volumeName]="fetching";
-        that.getVolumeStatus(volumeName, function(volumeStatus){
+        that.getVolumeBricks(volumeName).then(function(volumeBricks){
           that.setState(function(prevState,props){
-            if(prevState.volumeStatus == null){
-              prevState.volumeStatus = {};
-            }
-            prevState.volumeStatus[volumeName]= volumeStatus;
-            prevState.selectedVolumes[volumeName]="";
-            return {volumeStatus:prevState.volumeStatus,selectedVolumes:prevState.selectedVolumes};
+            prevState.selectedVolumes[volumeName] = "";
+            return {selectedVolumes:prevState.selectedVolumes};
           });
         });
 
@@ -108,12 +126,12 @@ class GlusterManagement extends Component {
           <div className="row">
             <div className="col-12">
               {
-                this.state.peerList !== null &&
-                <HostsTable peerList={this.state.peerList}
+                this.state.peers !== null &&
+                <HostsTable peers={this.state.peers}
                   handleRefresh={this.getPeers} />
               }
               {
-                this.state.peerList == null &&
+                this.state.peers == null &&
                 <InlineAlert
                   message="We were unable to fetch peer data! Open the browser console for more info." />
               }
@@ -122,15 +140,15 @@ class GlusterManagement extends Component {
           <div className="row">
             <div className="col-12">
               {
-                this.state.volumeList !== null &&
-                <VolumeTable volumeList={this.state.volumeList}
+                this.state.volumes !== null &&
+                <VolumeTable volumes={this.state.volumes}
                   selectedVolumes={this.state.selectedVolumes}
-                  volumeStatus={this.state.volumeStatus}
+                  volumeBricks={this.state.volumeBricks}
                   handleRefresh={this.getVolumes}
                   handleVolumeRowClick={this.handleVolumeRowClick}/>
               }
               {
-                this.state.volumeList == null &&
+                this.state.volumes == null &&
                 <InlineAlert
                   message="We were unable to fetch volume data! Open the browser console for more info." />
               }
@@ -156,7 +174,7 @@ class HostsTable extends Component{
         <th key={heading}>{heading}</th>
       )
     }
-    for(let host of this.props.peerList){
+    for(let host of this.props.peers){
       this.hostTableRows.push(
         <tr key={host.id}>
           <td>{host.name}</td>
@@ -215,19 +233,20 @@ class VolumeBricksTable extends Component{
     this.brickMoreInfoModals = [];
     let modalCounter = 0;
     for(let brick of this.props.volumeBrickList){
+      let brickInfo = brick.info;
       modalCounter++;
       this.volumeBricksTableRows.push(
-        <tr key={brick.brick}>
-          <td>{brick.brick}</td>
-          <td>{brick.hostuuid}</td>
+        <tr key={brickInfo.id}>
+          <td>{brickInfo.path}</td>
+          <td>{brickInfo.id}</td>
           <td>
-            {brick.status == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> }
-            {brick.status}
+            {brick.online && <span><span className="fa fa-arrow-circle-o-up status-icon" ></span> Online</span>}
+            {!brick.online && <span><span className="fa fa-arrow-circle-o-down status-icon"></span> Offline</span>}
           </td>
-          <td><ObjectModalButton modalId={"brick-"+modalCounter}/></td>
+          <td><ObjectModalButton modalId={brickInfo.id}/></td>
         </tr>);
         this.brickMoreInfoModals.push(
-          <ObjectModal key={brick.brick} title={"More info: "+brick.brick}  modalId={"brick-"+modalCounter} modalObject={brick} />
+          <ObjectModal key={brickInfo.id} title={"Brick: "+brick.brick}  modalId={brickInfo.id} modalObject={brick} />
         );
     }
   }
@@ -240,7 +259,7 @@ class VolumeBricksTable extends Component{
           <thead>
             <tr>
               <th>Brick</th>
-              <th>Host UUID</th>
+              <th>UUID</th>
               <th>Status</th>
               <th>More Info</th>
             </tr>
@@ -263,16 +282,16 @@ class VolumeTable extends Component{
   generateTable(){
     this.volumeTableRows = [];
     this.moreInfoModals=[];
-    for(let volume of this.props.volumeList){
-      let expanded = this.props.selectedVolumes.hasOwnProperty(volume.name) && this.props.volumeStatus !== null && this.props.volumeStatus[volume.name] !== null && this.props.volumeStatus[volume.name] !== undefined;
+    for(let volume of this.props.volumes){
+      let expanded = this.props.selectedVolumes.hasOwnProperty(volume.name) && this.props.volumeBricks !== null && this.props.volumeBricks[volume.name] !== null && this.props.volumeBricks[volume.name] !== undefined;
       this.volumeTableRows.push(
           <tr key={volume.id} onClick={()=>{this.props.handleVolumeRowClick(volume.name)}}>
             <td className="volume-expando">{expanded && <span className="fa fa-angle-down volume-expando"></span>}{!expanded && <span className="fa fa-angle-right volume-expando"></span>}</td>
             <td>{volume.name}</td>
             <td>{volume.type}{volume["arbiter-count"] > 0 && " (with Arbiter)"}</td>
             <td>
-              {/* {volume.volumeStatus == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> } */}
-              {volume.State}
+              {/* {volume.volumeBricks == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> } */}
+              {volume.state}
             </td>
             <td><ObjectModalButton modalId={volume.id}/></td>
           </tr>
@@ -282,10 +301,11 @@ class VolumeTable extends Component{
       );
       if(expanded){
         //TODO: pass the volume.bricksInfo brickinfo so it can be displayed in the modal
+        console.log("volBricks:", this.props.volumeBricks);
         this.volumeTableRows.push(
           <tr className="no-highlight" key={volume.name+"-brick-status"}>
             <td className="no-highlight" colSpan="100">
-              <VolumeBricksTable volumeBrickList={this.props.volumeStatus[volume.name].bricks} />
+              <VolumeBricksTable volumeBrickList={this.props.volumeBricks[volume.name]} />
             </td>
           </tr>
         );
@@ -294,6 +314,7 @@ class VolumeTable extends Component{
   }
 
   render(){
+
     this.generateTable();
     return(
       <div className="panel panel-default">
@@ -345,7 +366,7 @@ class ObjectModal extends Component {
         value = value.join(", ");
       }
       else if (typeof(value) === 'object') {
-        break;
+        value = <pre className="prettify"><code>{JSON.stringify(value)}</code></pre>;
       }
       else if (typeof(value.toString) === 'function'){
         value = value.toString();
