@@ -1,6 +1,7 @@
 import Redirect from 'react-router'
 import React, { Component } from 'react'
 import jwt from 'jsonwebtoken'
+import ExpandClusterWizard from './ExpandClusterWizard'
 
 class GlusterManagement extends Component {
   constructor(props) {
@@ -10,16 +11,20 @@ class GlusterManagement extends Component {
       peers: null,
       volumeBricks: null,
       volumes: null,
-      gdeployState: "",
-      gdeployWizardType: ""
+      expandClusterStarted: false,
+      showExpandCluster: true
+
+
     };
     this.gluster_api = cockpit.http("24007");
+    this.expandClusterWizard = React.createRef();
     //Binding "this" of the function to "this" of the component.
     //However, when nesting calls, it seems best to use "let that = this;"
     // and use  "that" in the inner nested calls.
     this.getPeers = this.getPeers.bind(this);
     this.getVolumes = this.getVolumes.bind(this);
     this.handleVolumeRowClick= this.handleVolumeRowClick.bind(this);
+    this.handleExpandCluster= this.handleExpandCluster.bind(this);
   }
 
   componentDidMount(){
@@ -43,16 +48,15 @@ class GlusterManagement extends Component {
   getPeers(){
     let that = this;
     let headers = { "Authorization" : this.generateAuthHeader() };
-    console.log("headers", headers);
+    // console.log("headers", headers);
     let promise =  this.gluster_api.get("/v1/peers")
     promise
     .then(function(result){
-          console.log(result);
           let peers = JSON.parse(result);
           that.setState({"peers":peers});
         })
     .catch(function(reason){
-          console.log("Failed for reason: ", reason);
+          console.warn("Failed for reason: ", reason);
         })
     return promise
   }
@@ -60,16 +64,15 @@ class GlusterManagement extends Component {
   getVolumes(){
     let that = this;
     let headers = { "Authorization" : this.generateAuthHeader() };
-    console.log("headers", headers);
+    // console.log("headers", headers);
     let promise =  this.gluster_api.get("/v1/volumes")
     promise
     .then(function(result){
-          console.log(result);
           let volumes = JSON.parse(result);
           that.setState({"volumes":volumes});
         })
     .catch(function(reason){
-          console.log("Failed for reason: ", reason);
+          console.warn("Failed for reason: ", reason);
         })
     return promise
   }
@@ -81,7 +84,6 @@ class GlusterManagement extends Component {
     promise
     .then(function(volumeBricksJson){
           let volumeBrickList = JSON.parse(volumeBricksJson);
-          console.log(volumeBrickList);
           that.setState(function(prevState, props){
             if(prevState.volumeBricks == null){
               prevState.volumeBricks = {};
@@ -91,7 +93,7 @@ class GlusterManagement extends Component {
           });
         })
     .catch(function(reason){
-          console.log("Failed for reason: ", reason);
+          console.warn("Failed for reason: ", reason);
         })
     return promise
   }
@@ -118,6 +120,16 @@ class GlusterManagement extends Component {
     });
   }
 
+  handleExpandCluster(event){
+    this.setState((prevState)=>{
+      if (prevState.expandClusterStarted){
+        this.expandClusterWizard.current.toggle();
+        return null
+      }
+      return { expandClusterStarted: true}
+    })
+  }
+
   render(){
     return(
       <div>
@@ -128,7 +140,8 @@ class GlusterManagement extends Component {
               {
                 this.state.peers !== null &&
                 <HostsTable peers={this.state.peers}
-                  handleRefresh={this.getPeers} />
+                  handleRefresh={this.getPeers}
+                handleExpandCluster={this.handleExpandCluster}/>
               }
               {
                 this.state.peers == null &&
@@ -154,6 +167,7 @@ class GlusterManagement extends Component {
               }
             </div>
           </div>
+          {this.state.expandClusterStarted && <ExpandClusterWizard ref={this.expandClusterWizard}/>}
         </div>
       </div>
     )
@@ -204,7 +218,7 @@ class HostsTable extends Component{
           </button>
           <span className="pull-right">
             <button className="btn btn-default action-btn"
-              onClick={()=>{cockpit.jump('/ovirt-dashboard#/expand_cluster')}}>
+              onClick={this.props.handleExpandCluster}>
               Expand Cluster
             </button>
           </span>
@@ -301,7 +315,6 @@ class VolumeTable extends Component{
       );
       if(expanded){
         //TODO: pass the volume.bricksInfo brickinfo so it can be displayed in the modal
-        console.log("volBricks:", this.props.volumeBricks);
         this.volumeTableRows.push(
           <tr className="no-highlight" key={volume.name+"-brick-status"}>
             <td className="no-highlight" colSpan="100">
@@ -327,7 +340,7 @@ class VolumeTable extends Component{
           </button>
           <span className="pull-right">
             <button className="btn btn-default action-btn"
-              onClick={()=>{cockpit.jump('/ovirt-dashboard#/create_gluster_volume')}}>
+              onClick={()=>{}}>
               Create Volume
             </button>
           </span>
