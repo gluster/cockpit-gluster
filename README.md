@@ -31,6 +31,10 @@ make rpm
 ![Dashboard Image](/screenshots/dashboard.png?raw=true "Dashboard")
 ![Volume Modal Image](/screenshots/volume_modal.png?raw=true "Volume Modal")
 
+## Cockpit
+
+https://github.com/cockpit-project/cockpit
+
 ## Installing GD2
 
 GD2 developement guide: https://github.com/gluster/glusterd2/blob/master/doc/development-guide.md
