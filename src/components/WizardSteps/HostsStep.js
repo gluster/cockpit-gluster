@@ -21,20 +21,26 @@ class HostsStep extends Component{
   render(){
     console.debug("Rendering HostsStep")
     return (
-        <Form>
-          <FormGroup>
-            <ControlLabel>Host 1</ControlLabel>
-            <FormControl id={"host0"} type="text" value={this.state.hosts["host0"]}onChange={this.onChange}/>
-          </FormGroup>
-          <FormGroup>
-            <ControlLabel>Host 2</ControlLabel>
-            <FormControl id={"host1"} type="text" value={this.state.hosts["host1"]}onChange={this.onChange}/>
-          </FormGroup>
-          <FormGroup>
-            <ControlLabel>Host 3</ControlLabel>
-            <FormControl id={"host2"} type="text" value={this.state.hosts["host2"]}onChange={this.onChange}/>
-          </FormGroup>
-        </Form>
+      <Grid fluid className="wizard-step-container">
+        <Grid.Row>
+          <Grid.Col>
+            <Form>
+              <FormGroup>
+                <ControlLabel>Host 1</ControlLabel>
+                <FormControl id={"host0"} type="text" value={this.state.hosts["host0"]}onChange={this.onChange}/>
+              </FormGroup>
+              <FormGroup>
+                <ControlLabel>Host 2</ControlLabel>
+                <FormControl id={"host1"} type="text" value={this.state.hosts["host1"]}onChange={this.onChange}/>
+              </FormGroup>
+              <FormGroup>
+                <ControlLabel>Host 3</ControlLabel>
+                <FormControl id={"host2"} type="text" value={this.state.hosts["host2"]}onChange={this.onChange}/>
+              </FormGroup>
+            </Form>
+          </Grid.Col>
+        </Grid.Row>
+      </Grid>
     );
   }
 }

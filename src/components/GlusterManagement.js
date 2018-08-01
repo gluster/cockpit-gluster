@@ -1,4 +1,3 @@
-import Redirect from 'react-router'
 import React, { Component } from 'react'
 import jwt from 'jsonwebtoken'
 import ExpandClusterWizard from './ExpandClusterWizard'
@@ -123,7 +122,9 @@ class GlusterManagement extends Component {
   handleExpandCluster(event){
     this.setState((prevState)=>{
       if (prevState.expandClusterStarted){
-        this.expandClusterWizard.current.toggle();
+        if(this.expandClusterWizard.current){
+          this.expandClusterWizard.current.toggle();
+        }
         return null
       }
       return { expandClusterStarted: true}

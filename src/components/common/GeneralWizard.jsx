@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Wizard } from 'patternfly-react'
+import { Wizard, Icon, Button } from 'patternfly-react'
 
 class GeneralWizard extends Component {
   constructor(props){
@@ -8,31 +8,36 @@ class GeneralWizard extends Component {
   }
 
   render(){
-    // <Wizard.Header/>
-
+    const stepCount = Array.isArray(this.props.children) ? this.props.children.length : 1;
     return (
-    <Wizard show={this.props.show}>
+    <Wizard show={this.props.show} title={this.props.title}>
+      <Wizard.Header
+        onClose={this.props.onClose}
+        title={this.props.title}
+      />
       <Wizard.Body>
-      {this.props.children}
+      {this.props.children[this.props.activeStepIndex]}
       </Wizard.Body>
-      <Wizard.Footer
+      <WizFooter
+        onNext={this.props.onNext}
         onBack={this.props.onBack}
         onCancel={this.props.onCancel}
         onFinal={this.props.onFinal}
-        stepCount={this.props.children.length}
+        onClose={this.props.onClose}
+        stepCount={stepCount}
         activeStepIndex={this.props.activeStepIndex}
-        finalText={this.props.finalText}
-        isBackDisabled={this.props.isBackDisabled}
-        isNextDisabled={this.props.isNextDisabled}
+
       />
     </Wizard>
     );
   }
 }
 
-const WizardFooter = ({
+const WizFooter = ({
   onBack,
+  onNext,
   onCancel,
+  onClose,
   onFinal,
   stepCount,
   activeStepIndex,
@@ -41,43 +46,47 @@ const WizardFooter = ({
   nextText,
   finalText,
   isBackDisabled,
-  isNextDisabled,
+  isNextDisabled
 }) => {
   const isFinalStep = activeStepIndex == stepCount - 1;
+  const isFirstStep = activeStepIndex == 0;
+  onCancel();
   return(
     <Wizard.Footer>
-      <Button bsStyle="default"
-        className="btn-cancel"
-        onClick={onCancel}>
+      <Button bsStyle="default" className="btn-cancel" onClick={onCancel}>
         {cancelText}
       </Button>
-      <Button
-        bsStyle="default"
-        onClick={onBackClick}
-        disabled={isBackDisabled}>
-        <Icon type="fa" name="angle-left" />
-        {backText}
-      </Button>
+      {
+        !isFirstStep &&
+          <Button bsStyle="default" onClick={onBack}>
+            <Icon type="fa" name="angle-left" />
+            {backText}
+          </Button>
+      }
       <Button
         bsStyle="primary"
-        onClick={isFinalStep ? onCancel : onNext}
-        disabled={isNextDisabled}>
-        {isFinalStep ? (
-          closeText
-        ) : (
-          <React.Fragment>
-            {nextText}
-            <Icon type="fa" name="angle-right" />
-          </React.Fragment>
-        )}
-      </Button>
+        onClick={isFinalStep ? onClose : onNext}
+        disabled={isNextDisabled}
+      >
+        {isFinalStep ?
+          (finalText)
+          : (
+            <React.Fragment>
+              {nextText}
+              <Icon type="fa" name="angle-right" />
+            </React.Fragment>
+            )
+        }
+</Button>
     </Wizard.Footer>
   )
 }
 
-WizardFooter.propTypes = {
+WizFooter.propTypes = {
   onBack: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
   onFinal: PropTypes.func.isRequired,
   stepCount: PropTypes.number.isRequired,
   activeStepIndex: PropTypes.number.isRequired,
@@ -89,7 +98,7 @@ WizardFooter.propTypes = {
   isNextDisabled: PropTypes.bool
 }
 
-WizardFooter.defaultProps = {
+WizFooter.defaultProps = {
   cancelText: "Cancel",
   backText: "Back",
   nextText: "Next",

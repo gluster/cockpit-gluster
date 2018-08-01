@@ -1,5 +1,4 @@
 
-import Redirect from 'react-router'
 import React, { Component } from 'react'
 import jwt from 'jsonwebtoken' //required claims: iss exp
 

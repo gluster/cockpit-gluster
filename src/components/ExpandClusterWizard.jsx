@@ -11,8 +11,9 @@ class ExpandClusterWizard extends Component {
       loading: false,
       isBackDisabled: false,
       isNextDisabled: false,
-      activeStepIndex: 2
+      activeStepIndex: 0
     }
+    this.title="Expand Cluster";
     this.close = () => {
       this.setState({ show: false});
     }
@@ -31,14 +32,25 @@ class ExpandClusterWizard extends Component {
     this.handleStepChange = (index) => {
       this.setState({activeStepIndex: index})
     }
-    this.onFinal = () => {
-      console.log("Final");
+    this.finish = () => {
+      console.debug("Final");
     }
-    this.onCancel = () => {
-      console.log("Cancel");
+    this.onCancel = (event) => {
+      if (event){
+        console.debug(event);
+      }
+      console.debug("Cancel");
     }
-    this.onBack = () => {
-      console.log("Back");
+    this.onBack = (e) => {
+      e.preventDefault();
+      console.debug("Back");
+    }
+    this.onNext = (e) => {
+      e.preventDefault();
+      console.debug("Next");
+      this.setState((prevState)=>{
+        return {activeStepIndex: prevState.activeStepIndex + 1}
+      });
     }
   }
 
@@ -46,14 +58,16 @@ class ExpandClusterWizard extends Component {
 
     return (
       <GeneralWizard
+        title={this.title}
         show={this.state.show}
+        onNext={this.onNext}
         onBack={this.onBack}
         onCancel={this.onCancel}
-        onFinal={this.onFinal}
-        activeStepIndex={this.props.activeStepIndex}
-        isBackDisabled={this.state.isBackDisabled}
-        isNextDisabled={this.state.isNextDisabled}
+        onFinal={this.finish}
+        onClose={this.close}
+        activeStepIndex={this.state.activeStepIndex}
         >
+        <HostsStep/>
         <HostsStep/>
       </GeneralWizard>
     );

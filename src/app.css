@@ -83,3 +83,7 @@ button.refresh-btn{
 .gluster-management .title{
   margin-bottom: 27px;
 }
+
+div.wizard-step-container {
+  padding: 1% 5%;
+}
