@@ -5,18 +5,32 @@ import { Wizard, Icon, Button } from 'patternfly-react'
 class GeneralWizard extends Component {
   constructor(props){
     super(props)
+    this.getChildrenAsArray = () => {
+      if (this.props.children == undefined){
+        this.children = [];
+      }
+      else if (Array.isArray(this.props.children)){
+        this.children =  this.props.children;
+      }
+      else{
+        this.children =  [this.props.children]
+      }
+    }
   }
-
   render(){
-    const stepCount = Array.isArray(this.props.children) ? this.props.children.length : 1;
+    this.getChildrenAsArray();
     return (
     <Wizard show={this.props.show} title={this.props.title}>
       <Wizard.Header
         onClose={this.props.onClose}
         title={this.props.title}
       />
+      <WizSteps
+        activeStep={this.props.activeStepIndex}
+        handleStepChange={this.props.handleStepChange}
+        children={this.children}/>
       <Wizard.Body>
-      {this.props.children[this.props.activeStepIndex]}
+      {this.children[this.props.activeStepIndex]}
       </Wizard.Body>
       <WizFooter
         onNext={this.props.onNext}
@@ -24,13 +38,32 @@ class GeneralWizard extends Component {
         onCancel={this.props.onCancel}
         onFinal={this.props.onFinal}
         onClose={this.props.onClose}
-        stepCount={stepCount}
+        stepCount={this.children.length}
         activeStepIndex={this.props.activeStepIndex}
 
       />
     </Wizard>
     );
   }
+}
+
+const WizSteps = ({children, activeStep, handleStepChange}) => {
+  var steps = [];
+  children.forEach((child,index)=>{
+    steps.push(
+      <Wizard.Step
+      title={child.props.stepName}
+      onClick={handleStepChange}
+      stepIndex={index}
+      step={index}
+      label={index+1}
+      activeStep={activeStep}
+      />
+    );
+  });
+  return(
+    <Wizard.Steps steps={steps}></Wizard.Steps>
+  );
 }
 
 const WizFooter = ({

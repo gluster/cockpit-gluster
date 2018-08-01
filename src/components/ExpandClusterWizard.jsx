@@ -43,7 +43,9 @@ class ExpandClusterWizard extends Component {
     }
     this.onBack = (e) => {
       e.preventDefault();
-      console.debug("Back");
+      this.setState((prevState)=>{
+        return {activeStepIndex: prevState.activeStepIndex - 1}
+      });
     }
     this.onNext = (e) => {
       e.preventDefault();
@@ -60,15 +62,16 @@ class ExpandClusterWizard extends Component {
       <GeneralWizard
         title={this.title}
         show={this.state.show}
-        onNext={this.onNext}
-        onBack={this.onBack}
+        onNext={(e)=> {return {activeStepIndex: this.state.activeStepIndex + 1}}}
+        onBack={(e)=> {return {activeStepIndex: this.state.activeStepIndex - 1}}}
         onCancel={this.onCancel}
         onFinal={this.finish}
         onClose={this.close}
+        handleStepChange={this.handleStepChange}
         activeStepIndex={this.state.activeStepIndex}
         >
-        <HostsStep/>
-        <HostsStep/>
+        <HostsStep stepName="Hosts 1"/>
+        <HostsStep stepName="Hosts 2"/>
       </GeneralWizard>
     );
   }
