@@ -20,6 +20,10 @@ npx --no-install webpack
 ```
 make rpm
 ```
+## Install to a remote host running GD2
+```
+./scripts/rem_install.bash hostname
+```
 
 ## Screenshots
 ![Dashboard Image](/screenshots/dashboard.png?raw=true "Dashboard")
