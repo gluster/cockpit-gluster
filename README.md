@@ -20,10 +20,12 @@ npx --no-install webpack
 ```
 make rpm
 ```
-## Install to a remote host running GD2
+## Install to a remote host running GD2 and Cockpit
 ```
 ./scripts/rem_install.bash hostname
 ```
+## Browse to the cockpit port:
+`http://your-remotehost.domain:9090`
 
 ## Screenshots
 ![Dashboard Image](/screenshots/dashboard.png?raw=true "Dashboard")
