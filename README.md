@@ -3,7 +3,7 @@ A GD2 based dashboard for gluster management
 
 ## Install Dependencies
 ```
-sudo yum install cockpit npm
+sudo yum install -y cockpit npm
 ```
 
 ## Install node modules
