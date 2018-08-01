@@ -1,6 +1,11 @@
 # cockpit-gluster [work in progress]
 A GD2 based dashboard for gluster management
 
+## Install Dependencies
+```
+sudo yum install cockpit npm
+```
+
 ## Install node modules
 ```
 npm install
