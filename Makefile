@@ -1,6 +1,7 @@
-TMPREPOS = rpm_build
-BUILDIR = build_dir
-RPMBUILD_ARGS := --define="_topdir  $(CURDIR)/$(TMPREPOS)"
+TMPREPOS = $(CURDIR)/rpm_build
+BUILDIR = $(CURDIR)/build_dir
+BUILDROOT = $(CURDIR)/build_root
+RPMBUILD_ARGS := --define="_topdir $(TMPREPOS)" --buildroot="$(BUILDROOT)"
 
 PACKAGE = cockpit-gluster
 VERSION = 0.1
@@ -25,15 +26,17 @@ tarify :
 
 
 srpm :	tarify
+	rm -rf $(BUILDROOT)
+	mkdir -p $(BUILDROOT)
 	rpmbuild $(RPMBUILD_ARGS) -ts $(TMPREPOS)/SOURCES/$(tarname)
 	@echo
 	@echo "srpm available at '$(TMPREPOS)'"
 	@echo
 
 rpm : srpm
-	rpmbuild --define="_topdir /home/tpjsm/workspace/rhhi/cockpit-gluster/rpm_build/" --rebuild "$(TMPREPOS)"/SRPMS/*.src.rpm
+	rpmbuild $(RPMBUILD_ARGS) --rebuild "$(TMPREPOS)"/SRPMS/*.src.rpm
 	@echo
 	@echo "rpm(s) available at '$(TMPREPOS)'"
 	@echo
-test :
-	echo $(BUILDIR)/$(distdir)
+clean-rpm :
+	rm -rf $(TMPREPOS) $(BUILDIR)

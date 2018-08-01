@@ -21,11 +21,8 @@ A Cockpit plugin to deploy and manage Gluster
 %setup -q
 
 %install
-echo Install prefix is %{_plugindir}
-mkdir -p %{_plugindir}/gluster-management/
 mkdir -p %{buildroot}/%{_plugindir}/gluster-management/
 install -m 744 dist/* -t %{buildroot}/%{_plugindir}/gluster-management/
-install -m 744 dist/* -t %{_plugindir}/gluster-management/
 
 %files
 %{_plugindir}/gluster-management
