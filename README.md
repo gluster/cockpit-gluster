@@ -31,4 +31,4 @@ GD2 developement guide: https://github.com/gluster/glusterd2/blob/master/doc/dev
 
 GD2 quickstart guide: https://github.com/gluster/glusterd2/blob/master/doc/quick-start-user-guide.md
 
-With my scripts (on CentOS): https://github.com/rohantmp/gd2-testing
+With my scripts (on CentOS VMs): https://github.com/rohantmp/gd2-testing
