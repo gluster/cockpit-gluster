@@ -7,6 +7,9 @@ class ExpandClusterWizard extends Component {
   constructor(props){
     super(props)
     this.state = {
+      glusterModel: {
+        hosts:["","",""]
+      },
       show: true,
       loading: false,
       isBackDisabled: false,
@@ -39,7 +42,7 @@ class ExpandClusterWizard extends Component {
       if (event){
         console.debug(event);
       }
-      console.debug("Cancel");
+      // console.debug("Cancel");
     }
     this.onBack = (e) => {
       e.preventDefault();
@@ -54,6 +57,17 @@ class ExpandClusterWizard extends Component {
         return {activeStepIndex: prevState.activeStepIndex + 1}
       });
     }
+    this.handleHostsStep = ({hosts, isValid}) => {
+      if (isValid){
+        this.setState((prevState)=>{
+          prevState.glusterModel.hosts = hosts;
+          return { isNextDisabled: false, glusterModel: prevState.glusterModel};
+        })
+      }
+      else{
+        this.setState({isNextDisabled:true});
+      }
+    }
   }
 
   render(){
@@ -62,16 +76,18 @@ class ExpandClusterWizard extends Component {
       <GeneralWizard
         title={this.title}
         show={this.state.show}
-        onNext={(e)=> {return {activeStepIndex: this.state.activeStepIndex + 1}}}
-        onBack={(e)=> {return {activeStepIndex: this.state.activeStepIndex - 1}}}
+        onNext={(e)=> {this.setState({activeStepIndex: this.state.activeStepIndex + 1})}}
+        onBack={(e)=> {this.setState({activeStepIndex: this.state.activeStepIndex - 1})}}
         onCancel={this.onCancel}
         onFinal={this.finish}
         onClose={this.close}
         handleStepChange={this.handleStepChange}
         activeStepIndex={this.state.activeStepIndex}
         >
-        <HostsStep stepName="Hosts 1"/>
-        <HostsStep stepName="Hosts 2"/>
+        <HostsStep
+          stepName="Hosts 1"
+          callback={this.handleHostsStep}
+          glusterModel={this.state.glusterModel}/>
       </GeneralWizard>
     );
   }
