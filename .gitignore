@@ -1,14 +1,10 @@
-
 build_dir/
 dist/
 node_modules/
 notes/
 rpm_build/
-
 VagrantFile
-dashboard/dist/
 notes/
-tpjsm_setup_env.sh
 .vagrant/
 .bash_aliases
 *.swp
