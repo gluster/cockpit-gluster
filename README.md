@@ -3,10 +3,10 @@ A GD2 based dashboard for gluster management
 
 ## Install Dependencies
 ```
-sudo yum install -y cockpit npm
+sudo yum install -y npm
 ```
 
-## Install node modules
+## Install JavaScipt Dependencies
 ```
 npm install
 ```
@@ -31,11 +31,14 @@ make rpm
 ![Dashboard Image](/screenshots/dashboard.png?raw=true "Dashboard")
 ![Volume Modal Image](/screenshots/volume_modal.png?raw=true "Volume Modal")
 
+
+## Install GD2 and cockpit on some remote hosts:
+
+As GD2 is in development, it is recommended to build it from the `master` branch and deploy it with an external etcd.
+
 ## Cockpit
 
 https://github.com/cockpit-project/cockpit
-
-## Installing GD2
 
 GD2 developement guide: https://github.com/gluster/glusterd2/blob/master/doc/development-guide.md
 
