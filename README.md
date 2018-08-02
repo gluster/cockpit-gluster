@@ -1,5 +1,14 @@
-# cockpit-gluster [work in progress]
-A GD2 based dashboard for gluster management
+# cockpit-gluster 
+A GD2 based dashboard for gluster management.
+
+### Current state: 
+- Working status panel for:
+  - Monitoring peers
+  - Monitoring volumes and bricks
+### Work in progress:
+- gluster-ansible integration for:
+  - deployment
+  - volume management functions
 
 ## Install Dependencies
 ```
