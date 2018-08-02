@@ -82,7 +82,6 @@ const WizFooter = ({
 }) => {
   const isFinalStep = activeStepIndex == stepCount - 1;
   const isFirstStep = activeStepIndex == 0;
-  onCancel();
   return(
     <Wizard.Footer>
       <Button bsStyle="default" className="btn-cancel" onClick={onCancel}>

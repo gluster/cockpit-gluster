@@ -7,55 +7,61 @@ class HostsStep extends Component{
     super(props)
     this.state = {
       hosts: this.props.glusterModel.hosts,
-      hostValidation: [null,null,null],
-      isValidationStarted: false
+      hostValidation: [false,false,false],
     }
-    this.onChange = (index,event) => {
-      let hostID = index;
-      let hostValue = event.target.value;
-      console.debug(hostValue);
-      this.setState((prevState)=>{
-        prevState.hosts[hostID] = hostValue;
-        prevState.hostValidation[hostID] = this.validateHost(hostValue);
-        let state = {
-          hosts: prevState.hosts,
-          hostValidation: prevState.hostValidation,
-          isValidationStarted: true
-        };
-        const isValid = state.isValidationStarted && state.hostValidation.every((value)=> value == null);
-        this.props.callback({hosts:state.hosts, isValid: isValid});
-        return state;
-      })
-    }
+    this.props.callback({isValid: this.state.hostValidation.every((isValid)=> isValid)});
   }
+
+  onHostChanged = (hostID,event) => {
+    let hostValue = event.target.value;
+    this.setState((prevState)=>{
+      prevState.hosts[hostID] = hostValue;
+      prevState.hostValidation[hostID] = this.validateHost(hostValue);
+      let state = {
+        hosts: prevState.hosts,
+        hostValidation: prevState.hostValidation,
+      };
+
+      const isValid = state.hostValidation.every((isValid)=> isValid);
+      this.props.callback({hosts:state.hosts, isValid: isValid});
+      return state;
+    })
+  }
+
   validateHost = (hostValue) => {
-    console.debug(hostValue.length);
     if (hostValue.length > 0){
-      return null
+      return true
     }
     else{
-      return 'error'
+      return false
     }
   }
 
+  getHostValidationState = (index) => {
+    if (this.props.showValidation){
+      if(this.state.hostValidation[index]){
+        return null
+      }
+      return 'error'
+    }
+    return null
+  }
 
 
   render(){
     let hostInputs = [];
-    let hostCount = hostCount
-    for (let index = 0; index < this.state.hosts.length; index++){
+    let hostCount = this.state.hosts.length;
+    for (let index = 0; index < hostCount; index++){
       let isArbiterHost = index == hostCount - 1;
       hostInputs.push(
-        <FormGroup key={index} validationState={this.state.hostValidation[index]}>
+        <FormGroup key={index} validationState={this.getHostValidationState(index)}>
           <ControlLabel>Host {index+1}</ControlLabel>
           <FormControl id={"host-"+index} type="text" placeholder="Host nework address"
-            value={this.state.hosts[index]}onChange={(event)=>{this.onChange(index,event)}}/>
+            value={this.state.hosts[index]}onChange={(event)=>{this.onHostChanged(index,event)}}/>
             {isArbiterHost && <HelpBlock>This host will be used as the arbiter if arbiter is configured.</HelpBlock>}
         </FormGroup>
       );
     }
-    console.debug("Rendering HostsStep")
-    console.debug("state.hostValidation:",this.state.hostValidation)
     return (
       <Grid fluid className="wizard-step-container">
         <Grid.Row>

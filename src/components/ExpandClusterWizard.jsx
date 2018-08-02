@@ -14,6 +14,7 @@ class ExpandClusterWizard extends Component {
       loading: false,
       isBackDisabled: false,
       isNextDisabled: false,
+      showValidation: false,
       activeStepIndex: 0
     }
     this.title="Expand Cluster";
@@ -42,19 +43,24 @@ class ExpandClusterWizard extends Component {
       if (event){
         console.debug(event);
       }
-      // console.debug("Cancel");
+      console.debug("Cancel");
     }
     this.onBack = (e) => {
       e.preventDefault();
       this.setState((prevState)=>{
-        return {activeStepIndex: prevState.activeStepIndex - 1}
+        return {activeStepIndex: prevState.activeStepIndex - 1, showValidation: "false"}
       });
     }
     this.onNext = (e) => {
       e.preventDefault();
       console.debug("Next");
       this.setState((prevState)=>{
-        return {activeStepIndex: prevState.activeStepIndex + 1}
+        if (prevState.isNextDisabled){
+          return {showValidation: true}
+        }
+        else{
+          return {activeStepIndex: prevState.activeStepIndex + 1, showValidation: false }
+        }
       });
     }
     this.handleHostsStep = ({hosts, isValid}) => {
@@ -71,13 +77,12 @@ class ExpandClusterWizard extends Component {
   }
 
   render(){
-
     return (
       <GeneralWizard
         title={this.title}
         show={this.state.show}
-        onNext={(e)=> {this.setState({activeStepIndex: this.state.activeStepIndex + 1})}}
-        onBack={(e)=> {this.setState({activeStepIndex: this.state.activeStepIndex - 1})}}
+        onNext={this.onNext}
+        onBack={this.onBack}
         onCancel={this.onCancel}
         onFinal={this.finish}
         onClose={this.close}
@@ -87,7 +92,16 @@ class ExpandClusterWizard extends Component {
         <HostsStep
           stepName="Hosts 1"
           callback={this.handleHostsStep}
-          glusterModel={this.state.glusterModel}/>
+          glusterModel={this.state.glusterModel}
+          showValidation={this.state.showValidation}
+        />
+        <HostsStep
+          stepName="Hosts 1"
+          callback={this.handleHostsStep}
+          glusterModel={this.state.glusterModel}
+          showValidation={this.state.showValidation}
+        />
+
       </GeneralWizard>
     );
   }
