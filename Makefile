@@ -1,11 +1,11 @@
 TMPREPOS = $(CURDIR)/rpm_build
 BUILDIR = $(CURDIR)/build_dir
 BUILDROOT = $(CURDIR)/build_root
-RPMBUILD_ARGS := --define="_topdir $(TMPREPOS)" --buildroot="$(BUILDROOT)"
 
 PACKAGE = cockpit-gluster
 VERSION = 0.1
 RELEASE = 0
+RPMBUILD_ARGS := --define="_topdir $(TMPREPOS)" --define="_version $(VERSION)" --buildroot="$(BUILDROOT)"
 
 distdir = $(PACKAGE)-$(VERSION)
 tarname = $(distdir).tar.gz
