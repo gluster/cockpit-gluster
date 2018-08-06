@@ -1,4 +1,5 @@
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const path = require('path');
 var CopyWebpackPlugin = require('copy-webpack-plugin')
 var CleanWebpackPlugin = require('clean-webpack-plugin')
 
@@ -21,8 +22,11 @@ module.exports = {
     rules: [
       {
         test: /.jsx?$/,
-        exclude: /node_modules/,
-        use: { loader: "babel-loader" }
+        include: path.resolve(__dirname, 'src'),
+        use: [
+          // 'cache-loader',
+          { loader: "babel-loader" }
+      ]
       },
       { test: /\.css$/, use: ["style-loader", "css-loader"] }
     ]

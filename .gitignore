@@ -8,3 +8,4 @@ notes/
 .vagrant/
 .bash_aliases
 *.swp
+.cache-loader/

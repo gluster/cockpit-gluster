@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import GeneralWizard from './common/GeneralWizard'
-import HostsStep from './WizardSteps/HostsStep'
+import HostStep from './WizardSteps/HostStep'
 
 class ExpandClusterWizard extends Component {
   constructor(props){
@@ -63,7 +63,7 @@ class ExpandClusterWizard extends Component {
         }
       });
     }
-    this.handleHostsStep = ({hosts, isValid}) => {
+    this.handleHostStep = ({hosts, isValid}) => {
       if (isValid){
         this.setState((prevState)=>{
           prevState.glusterModel.hosts = hosts;
@@ -89,15 +89,15 @@ class ExpandClusterWizard extends Component {
         handleStepChange={this.handleStepChange}
         activeStepIndex={this.state.activeStepIndex}
         >
-        <HostsStep
+        <HostStep
           stepName="Hosts 1"
-          callback={this.handleHostsStep}
+          callback={this.handleHostStep}
           glusterModel={this.state.glusterModel}
           showValidation={this.state.showValidation}
         />
-        <HostsStep
+        <HostStep
           stepName="Hosts 1"
-          callback={this.handleHostsStep}
+          callback={this.handleHostStep}
           glusterModel={this.state.glusterModel}
           showValidation={this.state.showValidation}
         />
