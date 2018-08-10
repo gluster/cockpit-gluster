@@ -57,7 +57,8 @@ class HostStep extends Component{
         <FormGroup key={index} validationState={this.getHostValidationState(index)}>
           <ControlLabel>Host {index+1}</ControlLabel>
           <FormControl id={"host-"+index} type="text" placeholder="Host nework address"
-            value={this.state.hosts[index]}onChange={(event)=>{this.onHostChanged(index,event)}}/>
+            value={this.state.hosts[index]} onChange={(event)=>{this.onHostChanged(index,event)}}
+          />
             {isArbiterHost && <HelpBlock>This host will be used as the arbiter if arbiter is configured.</HelpBlock>}
         </FormGroup>
       );
@@ -66,8 +67,8 @@ class HostStep extends Component{
       <Grid fluid className="wizard-step-container">
         <Grid.Row>
           <Grid.Col>
-            <Form>
               {hostInputs}
+              <Form inline>
             </Form>
           </Grid.Col>
         </Grid.Row>

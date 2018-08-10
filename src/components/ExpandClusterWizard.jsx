@@ -2,20 +2,22 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import GeneralWizard from './common/GeneralWizard'
 import HostStep from './WizardSteps/HostStep'
+import VolumeStep from './WizardSteps/VolumeStep'
 
 class ExpandClusterWizard extends Component {
   constructor(props){
     super(props)
     this.state = {
       glusterModel: {
-        hosts:["","",""]
+        hosts:["","",""],
+        volumes: []
       },
       show: true,
       loading: false,
       isBackDisabled: false,
       isNextDisabled: false,
       showValidation: false,
-      activeStepIndex: 0
+      activeStepIndex: 1
     }
     this.title="Expand Cluster";
     this.close = () => {
@@ -34,7 +36,11 @@ class ExpandClusterWizard extends Component {
       });
     }
     this.handleStepChange = (index) => {
-      this.setState({activeStepIndex: index})
+      this.setState((prevState)=>{
+        if(!(this.state.isNextDisabled || this.state.isBackDisabled)){
+          return {activeStepIndex: index}
+        }
+      })
     }
     this.finish = () => {
       console.debug("Final");
@@ -76,6 +82,10 @@ class ExpandClusterWizard extends Component {
     }
   }
 
+  handleVolumeStep = ({volumes, isValid}) => {
+    console.debug("handleVolumeStep");
+  }
+
   render(){
     return (
       <GeneralWizard
@@ -90,14 +100,14 @@ class ExpandClusterWizard extends Component {
         activeStepIndex={this.state.activeStepIndex}
         >
         <HostStep
-          stepName="Hosts 1"
+          stepName="Hosts"
           callback={this.handleHostStep}
           glusterModel={this.state.glusterModel}
           showValidation={this.state.showValidation}
         />
-        <HostStep
-          stepName="Hosts 1"
-          callback={this.handleHostStep}
+        <VolumeStep
+          stepName="Volumes"
+          callback={this.handleVolumeStep}
           glusterModel={this.state.glusterModel}
           showValidation={this.state.showValidation}
         />

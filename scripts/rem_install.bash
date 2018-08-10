@@ -16,4 +16,4 @@ npx webpack &&
 		"rpm -evh cockpit-gluster; \
 		rpm -ivh cockpit-gluster.rpm \
 		--relocate /usr/share/cockpit=/root/.local/share/cockpit"
-	notify-send "done"
+notify-send "done"

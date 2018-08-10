@@ -1,73 +1,51 @@
 import React, { Component } from 'react'
 import {Grid, Form, FormGroup, FormControl, ControlLabel, HelpBlock} from 'patternfly-react'
+import {DropdownButton, MenuItem} from 'react-bootstrap'
+import { notEmpty } from '../common/validators'
 
-
-class HostsStep extends Component{
+class VolumeStep extends Component{
   constructor(props){
     super(props)
     this.state = {
-      hosts: this.props.glusterModel.hosts,
-      hostValidation: [false,false,false],
+      volumes: this.props.glusterModel.volumes,
+      volumeValidation: [false,false,false],
     }
-    this.props.callback({isValid: this.state.hostValidation.every((isValid)=> isValid)});
-  }
-
-  onHostChanged = (hostID,event) => {
-    let hostValue = event.target.value;
-    this.setState((prevState)=>{
-      prevState.hosts[hostID] = hostValue;
-      prevState.hostValidation[hostID] = this.validateHost(hostValue);
-      let state = {
-        hosts: prevState.hosts,
-        hostValidation: prevState.hostValidation,
-      };
-
-      const isValid = state.hostValidation.every((isValid)=> isValid);
-      this.props.callback({hosts:state.hosts, isValid: isValid});
-      return state;
-    })
-  }
-
-  validateHost = (hostValue) => {
-    if (hostValue.length > 0){
-      return true
+    if (this.state.volumes.length < 1){
+      this.state.volumes.push({
+        name: "",
+        type: "replicate",
+        is_arbiter: false,
+        brick_dir: ""
+      });
     }
-    else{
-      return false
-    }
+    this.props.callback({isValid: this.state.volumeValidation.every((isValid)=> isValid)});
   }
-
-  getHostValidationState = (index) => {
-    if (this.props.showValidation){
-      if(this.state.hostValidation[index]){
-        return null
-      }
-      return 'error'
-    }
-    return null
+  onVolumeChange = (index, volume) =>{
+    console.debug("onVolumeChange:",volume);
+    // this.props.callback({volume})
   }
-
 
   render(){
-    let hostInputs = [];
-    let hostCount = this.state.hosts.length;
-    for (let index = 0; index < hostCount; index++){
-      let isArbiterHost = index == hostCount - 1;
-      hostInputs.push(
-        <FormGroup key={index} validationState={this.getHostValidationState(index)}>
-          <ControlLabel>Host {index+1}</ControlLabel>
-          <FormControl id={"host-"+index} type="text" placeholder="Host nework address"
-            value={this.state.hosts[index]}onChange={(event)=>{this.onHostChanged(index,event)}}/>
-            {isArbiterHost && <HelpBlock>This host will be used as the arbiter if arbiter is configured.</HelpBlock>}
-        </FormGroup>
+    let volumeInputs = [];
+    let volumeCount = this.state.volumes.length;
+    for (let index = 0; index < volumeCount; index++){
+      console.debug("volume row pushed");
+      let callback = ({volume})=>this.console.log(volume);
+
+      callback({volume: "wow"})
+      volumeInputs.push(
+        <VolumeInput key={index} callback={callback}/>
       );
     }
+    console.log(volumeInputs);
+
     return (
       <Grid fluid className="wizard-step-container">
         <Grid.Row>
           <Grid.Col>
-            <Form>
-              {hostInputs}
+            <Form inline>
+              {volumeInputs}
+
             </Form>
           </Grid.Col>
         </Grid.Row>
@@ -76,6 +54,59 @@ class HostsStep extends Component{
   }
 }
 
-HostsStep.title = "exported title"
+class VolumeInput extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      name: {value:"",validation:false,validationState:null},
+      type: {value:"replica",validation:false,validationState:null},
+      isArbiter: {value:false,validation:false,validationState:null},
+      brickDir: {value:"",validation:false,validationState:null}
+    }
+    this.validators = {
+      name:  (value) => notEmpty(value),
+      type: (value) => true,
+      isArbiter: (value) => true,
+      brickDir: (value) => notEmpty(value)
+    }
 
-export default HostsStep
+  }
+
+
+  onChange = (key, event) => {
+    console.debug("onChangeVolumeRow")
+    this.setState((prevState)=>{
+      let input = prevState[key];
+      input.value = event.target.value;
+      return { [key]: input };
+    });
+  }
+  onBlur = (key, event) => {
+    console.debug("onBlurVolumeRow")
+    this.setState((prevState)=>{
+      let input =  prevState[key];
+      input.value = event.target.value;
+      input.validation = this.validators[key](input.value);
+      this.props.callback({[key]: input});
+      return { [key]: input };
+    });
+  }
+
+
+  render(){
+
+    return (
+      <FormGroup validationState={this.state.validationState}>
+        <ControlLabel>Volume {index+1}</ControlLabel>
+        <FormControl type="text"
+          value={this.state.name.value}
+          onChange={(event)=>{this.onChange("name",event)}}
+          onBlur={(event)=>{this.onBlur("name",event)}}
+        />
+        </FormGroup>
+      );
+  }
+}
+
+
+export default VolumeStep

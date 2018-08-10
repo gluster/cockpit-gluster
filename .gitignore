@@ -9,3 +9,4 @@ notes/
 .bash_aliases
 *.swp
 .cache-loader/
+geckodriver.log
