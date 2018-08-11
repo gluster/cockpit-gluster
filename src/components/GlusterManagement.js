@@ -10,11 +10,10 @@ class GlusterManagement extends Component {
       peers: null,
       volumeBricks: null,
       volumes: null,
-      expandClusterStarted: false,
+      expandClusterStarted: true,
       showExpandCluster: true
-
-
     };
+    
     this.gluster_api = cockpit.http("24007");
     this.expandClusterWizard = React.createRef();
     //Binding "this" of the function to "this" of the component.
@@ -243,7 +242,7 @@ class VolumeBricksTable extends Component{
     super(props);
   }
 
-  generateTable(){
+  generateTable = () => {
     this.volumeBricksTableRows = [];
     this.brickMoreInfoModals = [];
     let modalCounter = 0;

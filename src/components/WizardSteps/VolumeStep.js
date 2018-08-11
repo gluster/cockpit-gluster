@@ -29,24 +29,17 @@ class VolumeStep extends Component{
     let volumeInputs = [];
     let volumeCount = this.state.volumes.length;
     for (let index = 0; index < volumeCount; index++){
-      console.debug("volume row pushed");
-      let callback = ({volume})=>this.console.log(volume);
-
-      callback({volume: "wow"})
+      let callback = (volume)=>{this.onVolumeChange(index,volume)};
       volumeInputs.push(
-        <VolumeInput key={index} callback={callback}/>
+        <VolumeInput key={index}  index={index} callback={callback}/>
       );
     }
-    console.log(volumeInputs);
 
     return (
       <Grid fluid className="wizard-step-container">
         <Grid.Row>
           <Grid.Col>
-            <Form inline>
               {volumeInputs}
-
-            </Form>
           </Grid.Col>
         </Grid.Row>
       </Grid>
@@ -58,53 +51,118 @@ class VolumeInput extends Component {
   constructor(props){
     super(props);
     this.state = {
-      name: {value:"",validation:false,validationState:null},
-      type: {value:"replica",validation:false,validationState:null},
-      isArbiter: {value:false,validation:false,validationState:null},
-      brickDir: {value:"",validation:false,validationState:null}
+      values:{
+        name: {value:"",validation:false,validationState:null},
+        type: {value:"replica",validation:false,validationState:null},
+        isArbiter: {value:false,validation:false,validationState:null},
+        brickDir: {value:"",validation:false,validationState:null}
+      }
     }
+
     this.validators = {
       name:  (value) => notEmpty(value),
       type: (value) => true,
       isArbiter: (value) => true,
       brickDir: (value) => notEmpty(value)
     }
-
+    for(let key in this.state.values){
+      this.state.values[key].validation = this.validators[key](this.state.values[key].value);
+    }
   }
 
-
   onChange = (key, event) => {
-    console.debug("onChangeVolumeRow")
+    let value = event.target.value;
+    console.debug("onChangeVolumeRow",event)
     this.setState((prevState)=>{
-      let input = prevState[key];
-      input.value = event.target.value;
+      let values = prevState.values;
+      let input = values[key];
+      input.value = value;
       return { [key]: input };
     });
   }
+
   onBlur = (key, event) => {
+    let value = event.target.value;
     console.debug("onBlurVolumeRow")
     this.setState((prevState)=>{
-      let input =  prevState[key];
-      input.value = event.target.value;
+      let values = prevState.values;
+      let input = values[key];
+      input.value = value;
       input.validation = this.validators[key](input.value);
+      input.validationState = input.validation ? null : 'error';
+      console.debug(this.validators[key])
       this.props.callback({[key]: input});
       return { [key]: input };
     });
   }
 
-
   render(){
 
     return (
-      <FormGroup validationState={this.state.validationState}>
-        <ControlLabel>Volume {index+1}</ControlLabel>
-        <FormControl type="text"
-          value={this.state.name.value}
-          onChange={(event)=>{this.onChange("name",event)}}
-          onBlur={(event)=>{this.onBlur("name",event)}}
-        />
-        </FormGroup>
+      <Grid fluid>
+          <Grid.Row>
+            <Grid.Col>
+              <Form>
+                <FormGroup validationState={this.state.values["name"].validationState}>
+                  <ControlLabel>Volume {this.props.index+1}</ControlLabel>
+                  <FormControl type="text"
+                    value={this.state.values["name"].value}
+                    onChange={(event)=>{this.onChange("name",event)}}
+                    onBlur={(event)=>{this.onBlur("name",event)}}
+                  />
+                </FormGroup>
+              </Form>
+            </Grid.Col>
+            <Grid.Col>
+              <ControlLabel>Type</ControlLabel>
+                <DropDown onClick={(event)=>{this.onChange("type",event)}}/>
+            </Grid.Col>
+          </Grid.Row>
+      </Grid>
       );
+  }
+}
+
+
+class DropDown extends Component{
+  constructor(props){
+    super(props)
+    this.state ={
+      activeItem : 0,
+    }
+  }
+
+  onSelect = (eventKey,event) =>{
+    console.debug("eventKey:", eventKey)
+  }
+  render(){
+    let options = this.props.options;
+    let menuItems = [];
+    let examples = [
+      {name: "Replica", value:"replica"},
+      {name: "Distribute", value:"distribute"},
+    ]
+    options = examples;
+    for(let index = 0; index < options.length; index++){
+      let option = options[index]
+      menuItems.push(
+        <li value={option.value} key={option.value} onClick={this.props.onClick}>
+            <a>
+              {option.name}
+            </a>
+        </li>
+      );
+    }
+    return(
+        <div className="btn-group bootstrap-select dropdown form-control">
+          <button className="btn btn-default dropdown-toggle" type="button"
+            data-toggle="dropdown" aria-expanded="false">
+            <span className="pull-left">{options[this.state.activeItem].name}</span>
+            <span className="caret" />
+          </button>
+          <ul className="dropdown-menu">{menuItems}</ul>
+        </div>
+    );
   }
 }
 
