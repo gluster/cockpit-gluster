@@ -11,21 +11,23 @@ fi
 if [[ $# -eq 1 ]]
 then
 	export HOST=$1
+	export REMOTE_USER="root"
 elif [[ $# -eq 2 ]]
 then
 	export HOST=$1
-	export USER=$2
+	export REMOTE_USER=$2
 else
 	echo -e $help
 	exit 1
 fi
 
-if [[ $USER = "root" ]]
+if [[ $REMOTE_USER = "root" ]]
 then
 	export USERHOME="/root/"
 else
-	export USERHOME="/home/${USER}/"
+	export USERHOME="/home/${REMOTE_USER}/"
 fi
+
 
 npx webpack &&
 	make rpm &&

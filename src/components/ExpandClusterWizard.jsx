@@ -10,8 +10,16 @@ class ExpandClusterWizard extends Component {
     this.state = {
       glusterModel: {
         hosts:["","",""],
-        volumes: []
+        volumes: [
+          {
+            name: "",
+            type: "replicate",
+            isArbiter: false,
+            brickDir: ""
+          }
+        ]
       },
+      volumeStepValid:true,
       show: true,
       loading: false,
       isBackDisabled: false,
@@ -43,23 +51,21 @@ class ExpandClusterWizard extends Component {
       })
     }
     this.finish = () => {
-      console.debug("Final");
+      //console.debug("Final");
     }
     this.onCancel = (event) => {
       if (event){
-        console.debug(event);
+        //console.debug(event);
       }
-      console.debug("Cancel");
+      //console.debug("Cancel");
     }
     this.onBack = (e) => {
-      e.preventDefault();
       this.setState((prevState)=>{
         return {activeStepIndex: prevState.activeStepIndex - 1, showValidation: "false"}
       });
     }
     this.onNext = (e) => {
-      e.preventDefault();
-      console.debug("Next");
+      //console.debug("Next");
       this.setState((prevState)=>{
         if (prevState.isNextDisabled){
           return {showValidation: true}
@@ -70,23 +76,35 @@ class ExpandClusterWizard extends Component {
       });
     }
     this.handleHostStep = ({hosts, isValid}) => {
-      if (isValid){
-        this.setState((prevState)=>{
-          prevState.glusterModel.hosts = hosts;
-          return { isNextDisabled: false, glusterModel: prevState.glusterModel};
-        })
-      }
-      else{
-        this.setState({isNextDisabled:true});
-      }
+      // console.debug("EC.hostChanged,hosts,isValid:",hosts,isValid)
+      this.setState((prevState)=>{
+        let newState = {};
+        if (hosts){
+          newState.glusterModel = prevState.glusterModel;
+          newState.glusterModel.hosts = hosts;
+        }
+        newState.isNextDisabled = !isValid;
+        newState.volumeStepValid = isValid;
+        return newState
+      });
     }
   }
 
   handleVolumeStep = ({volumes, isValid}) => {
     console.debug("handleVolumeStep");
+    this.setState((prevState)=>{
+      let newState = {};
+      if (volumes){
+        newState.glusterModel = prevState.glusterModel;
+        newState.glusterModel.volumes = volumes;
+      }
+      return newState
+    });
   }
 
   render(){
+    console.debug("EC.gm.hosts",this.state.glusterModel.hosts);
+    console.debug("EC.gm.volumes",this.state.glusterModel.volumes);
     return (
       <GeneralWizard
         title={this.title}

@@ -39,9 +39,12 @@ def src_watch(on_change, watch_dir="src/", browser=None):
     handler = EventHandler()
     notifier = pyinotify.Notifier(wm, handler)
     wdd = wm.add_watch(watch_dir, mask, rec=True)
-    print("[Watching %s]" % watch_dir)
-    notifier.loop()
-    print("[Stopped watching]")
+    try:
+        print("[Watching %s]" % watch_dir)
+        notifier.loop()
+    finally:
+        wdd.rm_watch(wdd.values())
+        print("[Stopped watching]")
 
 def start_browser(url=None):
     driver = webdriver.Firefox()

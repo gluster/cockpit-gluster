@@ -13,7 +13,6 @@ class GlusterManagement extends Component {
       expandClusterStarted: true,
       showExpandCluster: true
     };
-    
     this.gluster_api = cockpit.http("24007");
     this.expandClusterWizard = React.createRef();
     //Binding "this" of the function to "this" of the component.
