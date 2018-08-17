@@ -43,7 +43,7 @@ def src_watch(on_change, watch_dir="src/", browser=None):
         print("[Watching %s]" % watch_dir)
         notifier.loop()
     finally:
-        wdd.rm_watch(wdd.values())
+        wm.rm_watch(wdd.values())
         print("[Stopped watching]")
 
 def start_browser(url=None):

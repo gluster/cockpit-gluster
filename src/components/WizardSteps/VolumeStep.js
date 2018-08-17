@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import {Grid, Form, FormGroup, FormControl, ControlLabel, HelpBlock, Checkbox} from 'patternfly-react'
 import { notEmpty } from '../common/validators'
+import Dropdown from '../common/Dropdown'
 
 class VolumeStep extends Component{
   constructor(props){
@@ -15,7 +16,7 @@ class VolumeStep extends Component{
       {name: "Distribute", value:"distribute"}
     ]
     this.props.callback({isValid: this.state.volumeValidation.every((isValid)=> isValid)});
-    //console.debug("VolumeStepConstructor: volumes", this.state.volumes);
+    console.debug("VS.Constructor: volumes", this.state.volumes);
   }
   onVolumeChanged = (index, {updateKey, volumeValidation,value}) =>{
     this.setState((prevState)=>{
@@ -62,12 +63,12 @@ class VolumeStep extends Component{
 
   render(){
     console.debug("VS.state.volumes:",this.state.volumes);
-    let volumeInputs = [];
+    let volumeRows = [];
     let volumeCount = this.state.volumes.length;
     for (let index = 0; index < volumeCount; index++){
       let callback = (volume)=>{this.onVolumeChanged(index,volume)};
-      volumeInputs.push(
-        <VolumeInput
+      volumeRows.push(
+        <VolumeRow
           key={index}
           volume={this.state.volumes[index]}
           index={index}
@@ -81,13 +82,27 @@ class VolumeStep extends Component{
     return (
       <Grid fluid className="wizard-step-container">
         <Grid.Row>
-          <Grid.Col>
-              {volumeInputs}
+          <Grid.Col sm={3}>
+                <ControlLabel>Name</ControlLabel>
+          </Grid.Col>
+          <Grid.Col sm={2}>
+            <ControlLabel>Volume Type</ControlLabel>
+          </Grid.Col>
+          <Grid.Col sm={1}>
+                <ControlLabel>Arbiter</ControlLabel>
+          </Grid.Col>
+          <Grid.Col sm={4}>
+                <ControlLabel>Brick Directory</ControlLabel>
           </Grid.Col>
         </Grid.Row>
         <Grid.Row>
-          <Grid.Col smOffset={5} sm={2}>
-            <a onClick={this.handleAddVolume} className="col-md-offset-4">
+          <Grid.Col>
+              {volumeRows}
+          </Grid.Col>
+        </Grid.Row>
+        <Grid.Row>
+          <Grid.Col smOffset={4} sm={2}>
+            <a onClick={this.handleAddVolume}>
                 <span className="pficon pficon-add-circle-o">
                     <strong> Add Volume</strong>
                 </span>
@@ -99,7 +114,7 @@ class VolumeStep extends Component{
   }
 }
 
-class VolumeInput extends Component {
+class VolumeRow extends Component {
   constructor(props){
     super(props);
     this.state = {
@@ -139,7 +154,11 @@ class VolumeInput extends Component {
       let input = values[key];
       input.value = value;
       input.validation = this.validators[key](input.value);
-      this.props.onVolumeChangedCallback({updateKey: key, volumeValidation: this.getVolumeValidation(prevState), value: input.value});
+      this.props.onVolumeChangedCallback({
+          updateKey: key,
+          volumeValidation: this.getVolumeValidation(prevState),
+          value: input.value
+        });
 
       return {[key]: input};
     });
@@ -178,7 +197,6 @@ class VolumeInput extends Component {
             <Grid.Col sm={3}>
               <Form>
                 <FormGroup validationState={this.state.values["name"].validationState}>
-                  <ControlLabel>Name</ControlLabel>
                   <FormControl type="text"
                     value={this.state.values["name"].value}
                     onChange={(event)=>{this.onChangeNormal("name",event)}}
@@ -188,13 +206,11 @@ class VolumeInput extends Component {
               </Form>
             </Grid.Col>
             <Grid.Col sm={2}>
-              <ControlLabel>Volume Type</ControlLabel>
-                <DropDown typeOptions={this.props.typeOptions} onSelect={(value)=>{this.onChange("type",value)}}/>
+                <Dropdown typeOptions={this.props.typeOptions} onSelect={(value,index)=>{this.onChange("type",value)}}/>
             </Grid.Col>
             <Grid.Col sm={1}>
               <Form>
                 <FormGroup validationState={this.state.values["isArbiter"].validationState}>
-                  <ControlLabel>Arbiter</ControlLabel>
                   <Checkbox type="checkbox"
                     checked={this.state.values["isArbiter"].value}
                     onChange={(event)=>{this.onChecked("isArbiter",event)}}
@@ -205,7 +221,6 @@ class VolumeInput extends Component {
             <Grid.Col sm={4}>
               <Form>
                 <FormGroup validationState={this.state.values["brickDir"].validationState}>
-                  <ControlLabel>Brick Directory</ControlLabel>
                   <FormControl type="text"
                     value={this.state.values["brickDir"].value}
                     onChange={(event)=>{this.onChangeNormal("brickDir",event)}}
@@ -228,47 +243,6 @@ class VolumeInput extends Component {
 }
 
 
-class DropDown extends Component{
-  constructor(props){
-    super(props)
-    this.state ={
-      activeItem : 0,
-    }
-  }
-
-  onClick = (value,index) => {
-    this.setState((prevState)=>{
-      return {activeItem:index}
-    });
-    this.props.onSelect(value);
-  }
-  render(){
-    let options = this.props.typeOptions;
-    let menuItems = [];
-
-    for(let index = 0; index < options.length; index++){
-      let option = options[index]
-      menuItems.push(
-        <li value={option.value} key={option.value} onClick={(event) => {this.onClick(option.value,index)}}>
-            <a>
-              {option.name}
-            </a>
-        </li>
-      );
-    }
-
-    return(
-        <div className="btn-group bootstrap-select dropdown form-control">
-          <button className="btn btn-default dropdown-toggle" type="button"
-            data-toggle="dropdown" aria-expanded="false">
-            <span className="pull-left">{options[this.state.activeItem]["name"]}</span>
-            <span className="caret" />
-          </button>
-          <ul className="dropdown-menu">{menuItems}</ul>
-        </div>
-    );
-  }
-}
 
 
 export default VolumeStep

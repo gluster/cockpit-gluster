@@ -23,7 +23,7 @@ A Cockpit plugin to deploy and manage Gluster
 
 %install
 mkdir -p %{buildroot}/%{_plugindir}/gluster-management/
-install -m 744 dist/* -t %{buildroot}/%{_plugindir}/gluster-management/
+install -m 644 dist/* -t %{buildroot}/%{_plugindir}/gluster-management/
 
 %files
 %{_plugindir}/gluster-management

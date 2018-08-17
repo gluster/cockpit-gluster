@@ -9,6 +9,7 @@ class HostStep extends Component{
       hostValidation: this.props.glusterModel.hosts.map((host)=>this.validateHost(host)),
     }
     this.props.callback({isValid: this.state.hostValidation.every((isValid)=> isValid)});
+    console.debug("HS.constructor, hosts:", this.props.glusterModel.hosts);
   }
 
   onHostChanged = (hostIndex,event) => {

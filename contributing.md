@@ -10,4 +10,6 @@ Please raise an issue if there is a problem with one of these:
 - Do not initialize state with props unless you hard copy them.
 
 ## Variable naming
-- camelCase
+- lowerCamelCase for variables, properties, etc.
+- UpperCamelCase for constructors.
+- CAPITAL_CASE_WITH_UNDERSCORES 

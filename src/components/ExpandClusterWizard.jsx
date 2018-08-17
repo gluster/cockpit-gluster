@@ -3,21 +3,29 @@ import React, { Component } from 'react';
 import GeneralWizard from './common/GeneralWizard'
 import HostStep from './WizardSteps/HostStep'
 import VolumeStep from './WizardSteps/VolumeStep'
+import BrickStep from './WizardSteps/BrickStep'
 
 class ExpandClusterWizard extends Component {
   constructor(props){
     super(props)
     this.state = {
       glusterModel: {
-        hosts:["","",""],
+        hosts:["1","2","3"],
         volumes: [
           {
-            name: "",
+            name: "hah",
             type: "replicate",
             isArbiter: false,
-            brickDir: ""
+            brickDir: "/gluster_bricks/hah"
           }
-        ]
+        ],
+        bricks: [],
+        raidConfig:{
+          hostIndex: 0,
+          raid_type:"jbod",
+          stripe_size:256,
+          disk_count:12
+        }
       },
       volumeStepValid:true,
       show: true,
@@ -25,69 +33,70 @@ class ExpandClusterWizard extends Component {
       isBackDisabled: false,
       isNextDisabled: false,
       showValidation: false,
-      activeStepIndex: 1
+      activeStepIndex: 2
     }
     this.title="Expand Cluster";
-    this.close = () => {
-      this.setState({ show: false});
-    }
-    this.open = () => {
-      this.setState({ show: true});
-    }
-    this.exit = () =>{
-      //TODO: add confirmation
-      this.close();
-    }
-    this.toggle = () => {
-      this.setState((prevState)=>{
-        return { show: !prevState.show }
-      });
-    }
-    this.handleStepChange = (index) => {
-      this.setState((prevState)=>{
-        if(!(this.state.isNextDisabled || this.state.isBackDisabled)){
-          return {activeStepIndex: index}
-        }
-      })
-    }
-    this.finish = () => {
-      //console.debug("Final");
-    }
-    this.onCancel = (event) => {
-      if (event){
-        //console.debug(event);
+  }
+
+  close = () => {
+    this.setState({ show: false});
+  }
+  open = () => {
+    this.setState({ show: true});
+  }
+  exit = () =>{
+    //TODO: add confirmation
+    this.close();
+  }
+  toggle = () => {
+    this.setState((prevState)=>{
+      return { show: !prevState.show }
+    });
+  }
+  handleStepChange = (index) => {
+    this.setState((prevState)=>{
+      if(!(this.state.isNextDisabled || this.state.isBackDisabled)){
+        return {activeStepIndex: index}
       }
-      //console.debug("Cancel");
+    })
+  }
+  finish = () => {
+    //console.debug("Final");
+  }
+  onCancel = (event) => {
+    if (event){
+      //console.debug(event);
     }
-    this.onBack = (e) => {
-      this.setState((prevState)=>{
-        return {activeStepIndex: prevState.activeStepIndex - 1, showValidation: "false"}
-      });
-    }
-    this.onNext = (e) => {
-      //console.debug("Next");
-      this.setState((prevState)=>{
-        if (prevState.isNextDisabled){
-          return {showValidation: true}
-        }
-        else{
-          return {activeStepIndex: prevState.activeStepIndex + 1, showValidation: false }
-        }
-      });
-    }
-    this.handleHostStep = ({hosts, isValid}) => {
-      // console.debug("EC.hostChanged,hosts,isValid:",hosts,isValid)
-      this.setState((prevState)=>{
-        let newState = {};
-        if (hosts){
-          newState.glusterModel = prevState.glusterModel;
-          newState.glusterModel.hosts = hosts;
-        }
-        newState.isNextDisabled = !isValid;
-        newState.volumeStepValid = isValid;
-        return newState
-      });
-    }
+    //console.debug("Cancel");
+  }
+  onBack = (e) => {
+    this.setState((prevState)=>{
+      return {activeStepIndex: prevState.activeStepIndex - 1, showValidation: "false"}
+    });
+  }
+  onNext = (e) => {
+    //console.debug("Next");
+    this.setState((prevState)=>{
+      if (prevState.isNextDisabled){
+        return {showValidation: true}
+      }
+      else{
+        return {activeStepIndex: prevState.activeStepIndex + 1, showValidation: false }
+      }
+    });
+  }
+  handleHostStep = ({hosts, isValid}) => {
+    // console.debug("EC.hostChanged,hosts,isValid:",hosts,isValid)
+    this.setState((prevState)=>{
+      let newState = {};
+      if (hosts){
+        newState.glusterModel = prevState.glusterModel;
+        newState.glusterModel.hosts = hosts;
+      }
+      newState.isNextDisabled = !isValid;
+      newState.volumeStepValid = isValid;
+      return newState
+    });
   }
 
   handleVolumeStep = ({volumes, isValid}) => {
@@ -101,10 +110,29 @@ class ExpandClusterWizard extends Component {
       return newState
     });
   }
+  handleBrickStep = ({raidConfig, bricks, isValid}) => {
+    console.debug("EC.handleBrickStep:");
+    this.setState((prevState)=>{
+      let newState = {};
+      if (bricks){
+        console.debug("^ bricks:", bricks)
+        newState.glusterModel = prevState.glusterModel;
+        newState.glusterModel.bricks = bricks;
+      }
+      if (raidConfig){
+        console.debug("EC.handleBrickStep.raidConfig",raidConfig);
+        newState.glusterModel = prevState.glusterModel;
+        newState.glusterModel.raidConfig = raidConfig;
+      }
+      return newState
+    });
+  }
 
   render(){
-    console.debug("EC.gm.hosts",this.state.glusterModel.hosts);
-    console.debug("EC.gm.volumes",this.state.glusterModel.volumes);
+    console.debug("EC.render hosts",this.state.glusterModel.hosts);
+    console.debug("EC.render volumes",this.state.glusterModel.volumes);
+    console.debug("EC.render bricks",this.state.glusterModel.bricks);
+    console.debug("EC.render raidConfig",this.state.glusterModel.raidConfig);
     return (
       <GeneralWizard
         title={this.title}
@@ -129,6 +157,12 @@ class ExpandClusterWizard extends Component {
           glusterModel={this.state.glusterModel}
           showValidation={this.state.showValidation}
         />
+      <BrickStep
+        stepName="Bricks"
+        callback={this.handleBrickStep}
+        glusterModel={this.state.glusterModel}
+        showValidation={this.state.showValidation}
+      />
 
       </GeneralWizard>
     );
