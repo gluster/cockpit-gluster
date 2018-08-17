@@ -4,6 +4,7 @@ import GeneralWizard from './common/GeneralWizard'
 import HostStep from './WizardSteps/HostStep'
 import VolumeStep from './WizardSteps/VolumeStep'
 import BrickStep from './WizardSteps/BrickStep'
+import ReviewStep from './WizardSteps/ReviewStep'
 
 class ExpandClusterWizard extends Component {
   constructor(props){
@@ -16,7 +17,7 @@ class ExpandClusterWizard extends Component {
             name: "hah",
             type: "replicate",
             isArbiter: false,
-            brickDir: "/gluster_bricks/hah"
+            brickDir: "/gluster_bricks/hah/hah"
           }
         ],
         bricks: [],
@@ -86,7 +87,7 @@ class ExpandClusterWizard extends Component {
     });
   }
   handleHostStep = ({hosts, isValid}) => {
-    // console.debug("EC.hostChanged,hosts,isValid:",hosts,isValid)
+    ////console.debug("EC.hostChanged,hosts,isValid:",hosts,isValid)
     this.setState((prevState)=>{
       let newState = {};
       if (hosts){
@@ -100,7 +101,7 @@ class ExpandClusterWizard extends Component {
   }
 
   handleVolumeStep = ({volumes, isValid}) => {
-    console.debug("handleVolumeStep");
+   //console.debug("handleVolumeStep");
     this.setState((prevState)=>{
       let newState = {};
       if (volumes){
@@ -111,16 +112,16 @@ class ExpandClusterWizard extends Component {
     });
   }
   handleBrickStep = ({raidConfig, bricks, isValid}) => {
-    console.debug("EC.handleBrickStep:");
+   //console.debug("EC.handleBrickStep:");
     this.setState((prevState)=>{
       let newState = {};
       if (bricks){
-        console.debug("^ bricks:", bricks)
+       //console.debug("^ bricks:", bricks)
         newState.glusterModel = prevState.glusterModel;
         newState.glusterModel.bricks = bricks;
       }
       if (raidConfig){
-        console.debug("EC.handleBrickStep.raidConfig",raidConfig);
+       //console.debug("EC.handleBrickStep.raidConfig",raidConfig);
         newState.glusterModel = prevState.glusterModel;
         newState.glusterModel.raidConfig = raidConfig;
       }
@@ -129,10 +130,7 @@ class ExpandClusterWizard extends Component {
   }
 
   render(){
-    console.debug("EC.render hosts",this.state.glusterModel.hosts);
-    console.debug("EC.render volumes",this.state.glusterModel.volumes);
-    console.debug("EC.render bricks",this.state.glusterModel.bricks);
-    console.debug("EC.render raidConfig",this.state.glusterModel.raidConfig);
+   console.debug("EC.render",JSON.stringify(this.state.glusterModel));
     return (
       <GeneralWizard
         title={this.title}
@@ -162,6 +160,10 @@ class ExpandClusterWizard extends Component {
         callback={this.handleBrickStep}
         glusterModel={this.state.glusterModel}
         showValidation={this.state.showValidation}
+      />
+      <ReviewStep
+        stepName="Review"
+        glusterModel={this.state.glusterModel}
       />
 
       </GeneralWizard>

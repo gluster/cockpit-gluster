@@ -16,7 +16,7 @@ class VolumeStep extends Component{
       {name: "Distribute", value:"distribute"}
     ]
     this.props.callback({isValid: this.state.volumeValidation.every((isValid)=> isValid)});
-    console.debug("VS.Constructor: volumes", this.state.volumes);
+   //console.debug("VS.Constructor: volumes", this.state.volumes);
   }
   onVolumeChanged = (index, {updateKey, volumeValidation,value}) =>{
     this.setState((prevState)=>{
@@ -24,6 +24,10 @@ class VolumeStep extends Component{
       let volumeValidation = prevState.volumeValidation;
       if (value) {
         volumes[index][updateKey] = value;
+        // if(updateKey == "name"){
+        //   volumes[index]["brickDir"] = "/gluster_bricks/"+value+"/"+value;
+        //  //console.debug("VS.onVolumeChanged")
+        // }
       }
       if (volumeValidation){
         volumeValidation[index] = volumeValidation;
@@ -62,7 +66,7 @@ class VolumeStep extends Component{
   }
 
   render(){
-    console.debug("VS.state.volumes:",this.state.volumes);
+   //console.debug("VS.state.volumes:",this.state.volumes);
     let volumeRows = [];
     let volumeCount = this.state.volumes.length;
     for (let index = 0; index < volumeCount; index++){

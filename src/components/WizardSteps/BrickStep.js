@@ -20,6 +20,36 @@ class BrickStep extends Component{
       stripe_size:(value) => {return notEmpty(value)},
       disk_count:(value) => {return notEmpty(value)}
     }
+
+    //for generating bricks from volumes
+    this.getDefaultValue = {
+      volName: (volume) => {return volume.name},
+      device: (volume) => "/dev/sdb",
+      size: (volume) =>  100,
+      thinPool: (volume) => true,
+      mountPoint: (volume) => {
+        let mountPointSplit = volume.brickDir.split('/');
+        mountPointSplit.pop();
+        let mountPoint = mountPointSplit.join('/')
+        return mountPoint
+      },
+      vdo: (volume) => false
+    }
+
+
+    this.raidOptions = [
+      {name: "JBOD", value:"jbod"},
+      {name: "RAID 5", value:"raid_5"},
+      {name: "RAID 6", value:"raid_6"},
+      {name: "RAID 10", value:"raid_10"}
+    ]
+    // this.props.callback({isValid: this.state.brickValidation.every((isValid)=> isValid)});
+    //console.debug("BS.Constructor: bricks", this.state.bricks);
+  }
+
+
+  componentWillMount(){
+    //initialize validation
     for(let key in this.props.glusterModel.raidConfig){
       if (typeof(this.validators[key]) == 'function'){
         let validation = false;
@@ -31,29 +61,21 @@ class BrickStep extends Component{
         this.state.raidValidation[key].validation = validation;
       }
     }
-    this.raidOptions = [
-      {name: "JBOD", value:"jbod"},
-      {name: "RAID 5", value:"raid_5"},
-      {name: "RAID 6", value:"raid_6"},
-      {name: "RAID 10", value:"raid_10"}
-    ]
-    // this.props.callback({isValid: this.state.brickValidation.every((isValid)=> isValid)});
-    //console.debug("BS.Constructor: bricks", this.state.bricks);
   }
 
   handleHostSelect = (value, hostIndex) => {
     this.setState({hostIndex:hostIndex});
   }
 
-  handleBrickChange = (index, hostIndex, bricks,{brickKey, brickValue, isValid}) => {
+  handleBrickChange = (hostIndex, index, bricks,{brickKey, brickValue, isValid}) => {
     let oldBricks = bricks;
 
     let newBricks = [];
     if (oldBricks !== undefined){
       newBricks = oldBricks.slice();
     }
+    // console.debug("BS.handleBrickChange",hostIndex,index,brickKey, brickValue, JSON.stringify(newBricks))
     newBricks[hostIndex][index][brickKey] = brickValue;
-    console.debug("BS.handleBrickChange", index, hostIndex, brickKey, brickValue, newBricks)
     this.props.callback({bricks: newBricks});
   }
 
@@ -83,7 +105,7 @@ class BrickStep extends Component{
       newState.raidValidation = prevState.raidValidation;
       newState.raidValidation[key].validation = validation;
       newState.raidValidation[key].validationState = validation ? null : 'error';
-      console.debug("BS.newRaidValidationState",newState.raidValidation[key].validationState)
+     //console.debug("BS.newRaidValidationState",newState.raidValidation[key].validationState)
       return newState
     });
   }
@@ -98,14 +120,16 @@ class BrickStep extends Component{
   }
 
 
+
   render(){
-    console.debug("BS.props.volumes:",this.props.glusterModel.volumes);
-    console.debug("BS.props.bricks:",this.props.glusterModel.bricks);
+   //console.debug("BS.props.volumes:",this.props.glusterModel.volumes);
+   //console.debug("BS.props.bricks:",this.props.glusterModel.bricks);
     //generating bricks from vols
     let hosts = this.props.glusterModel.hosts;
     let volumes = this.props.glusterModel.volumes;
     //using slice() to create a local copy
     let bricks = this.props.glusterModel.bricks.slice();
+    let bricksChanged = false;
 
     let hostOptions = hosts.map((host)=>{
       return {name: host, value:host}
@@ -117,17 +141,26 @@ class BrickStep extends Component{
     for (let hostIndex = 0;hostIndex < hosts.length; hostIndex++){
       while (bricks[hostIndex].length < volumes.length){
         let index = bricks[hostIndex].length;
+        let brick = {};
+        for (let key in this.getDefaultValue){
+          brick[key] = this.getDefaultValue[key](volumes[index]);
+        }
         bricks[hostIndex].push(
-          {name: volumes[index].name, device: "/dev/sdb", size: 100, mount_point: "/gluster_bricks/"+volumes[index].name+"/",vdo: false}
+          brick
+          // {volName: volumes[index].name, thinPool:false, device: "/dev/sdb", size: 100, mountPoint: "/gluster_bricks/"+volumes[index].name+"/",vdo: false}
         );
+        bricksChanged = true;
       }
     }
 
+    if (bricksChanged){
+      this.props.callback({bricks: bricks});
+    }
     let brickRows = [];
     let volumeCount = volumes.length;
     for (let index = 0; index < volumeCount; index++){
-      console.debug("BS.BR.vol."+index, volumes[index])
-      console.debug("BS.BR.brick."+index, bricks[this.state.hostIndex][index])
+     //console.debug("BS.BR.vol."+index, volumes[index])
+     //console.debug("BS.BR.brick."+index, bricks[this.state.hostIndex][index])
       brickRows.push(
         <BrickRow
           key={index}
@@ -281,7 +314,7 @@ class BrickRow extends Component {
           let mountPointSplit = props.volume.brickDir.split('/');
           mountPointSplit.pop();
           let mountPoint = mountPointSplit.join('/')
-          return mountPoint+"/defaulting"
+          return mountPoint
         },
         vdo: (props) => false
       }
@@ -316,7 +349,7 @@ class BrickRow extends Component {
     }
 
     onBlur = (brick, key, value) => {
-      console.debug("BR.onBlur",key,value);
+     //console.debug("BR.onBlur",key,value);
       this.setState((prevState)=>{
         let newState = {};
         let validator = this.validators[key];
@@ -332,18 +365,8 @@ class BrickRow extends Component {
 
 
     render(){
-    let brick = {};
-    for(let key in this.state.validation){
-      if (key in this.props.brick){
-        brick[key] = this.props.brick[key];
-      }
-      else if (key in this.getDefaultValue){
-        brick[key] = this.getDefaultValue[key](this.props);
-      }
-      else {
-        console.warn("Uninitialized key in brick row: ", key)
-      }
-    }
+    let brick = this.props.brick;
+   //console.debug("BR.render brick",brick)
     const gridValues=[2,2,2,1,3,1];
     return(
       <React.Fragment>
@@ -384,19 +407,69 @@ class BrickRow extends Component {
             </Form>
           </Col>
           <Col sm={gridValues[1]}>
-            (input)
+            <Form>
+              <FormGroup validationState={this.state.validation["device"].validationState}>
+                <FormControl type="text"
+                  value={brick["device"]}
+                  onChange={(event)=>{
+                    this.onChange(brick, "device", event.target.value)
+                  }}
+                  onBlur={(event)=>{
+                    this.onBlur(brick, "device",event.target.value)
+                  }}
+                />
+              </FormGroup>
+            </Form>
           </Col>
           <Col sm={gridValues[2]}>
-            (input)
+            <Form>
+              <FormGroup validationState={this.state.validation["size"].validationState}>
+                <FormControl type="text"
+                  value={brick["size"]}
+                  onChange={(event)=>{
+                    this.onChange(brick, "size", event.target.value)
+                  }}
+                  onBlur={(event)=>{
+                    this.onBlur(brick, "size",event.target.value)
+                  }}
+                />
+              </FormGroup>
+            </Form>
           </Col>
           <Col sm={gridValues[3]}>
-            (input)
+            <Form>
+              <FormGroup validationState={this.state.validation["thinPool"].validationState}>
+                <Checkbox
+                  checked={brick["thinPool"]}
+                  onChange={(event)=>{this.onChange(brick, "thinPool",event.target.checked)}}
+                />
+              </FormGroup>
+            </Form>
           </Col>
           <Col sm={gridValues[4]}>
-            (input)
+            <Form>
+              <FormGroup validationState={this.state.validation["mountPoint"].validationState}>
+                <FormControl type="text"
+                  value={brick["mountPoint"]}
+                  onChange={(event)=>{
+                    this.onChange(brick, "mountPoint", event.target.value)
+                  }}
+                  onBlur={(event)=>{
+                    this.onBlur(brick, "mountPoint",event.target.value)
+                  }}
+                />
+              </FormGroup>
+            </Form>
           </Col>
           <Col sm={gridValues[5]}>
-            (input)
+            <Form>
+              <FormGroup validationState={this.state.validation["vdo"].validationState}>
+                <Checkbox
+                  checked={brick["vdo"]}
+                  onChange={(event)=>{this.onChange(brick, "vdo",event.target.checked)}}
+                />
+              </FormGroup>
+            </Form>
           </Col>
         </Row>
     </React.Fragment>
