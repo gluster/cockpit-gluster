@@ -91,3 +91,35 @@ div.wizard-step-container {
 div.wizard-bricksdir{
   margin-left:2.8%;
 }
+
+div.brick-col {
+  padding-left: 0px;
+  padding-right:0px;
+}
+
+.wizard-checkbox input[type=checkbox]{
+  height: 25px;
+  width: 16px;
+  margin-bottom: 0px;
+  margin-left: -10px;
+}
+div.wizard-checkbox.thinpool{
+  width: 6%;
+}
+div.wizard-checkbox.vdo input[type=checkbox]{
+  margin-left: 20%;
+}
+.checkbox.wizard-checkbox{
+  margin-top: 0px;
+}
+
+div.brick-form-group{
+  margin-bottom: 0px;
+}
+
+.brick-title-row, .brick-entry-row{
+  margin-left:8%;
+}
+.brick-entry-row{
+  margin-bottom:0px;
+}

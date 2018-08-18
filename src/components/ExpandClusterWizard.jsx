@@ -18,9 +18,16 @@ class ExpandClusterWizard extends Component {
             type: "replicate",
             isArbiter: false,
             brickDir: "/gluster_bricks/hah/hah"
+          },
+          {
+            name: "hawwh",
+            type: "replicate",
+            isArbiter: false,
+            brickDir: "/gluster_bricks/hawwh/hawwh"
           }
         ],
         bricks: [],
+        cacheConfig: [],
         raidConfig:{
           hostIndex: 0,
           raid_type:"jbod",

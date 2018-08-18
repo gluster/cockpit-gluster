@@ -129,6 +129,7 @@ class BrickStep extends Component{
     let volumes = this.props.glusterModel.volumes;
     //using slice() to create a local copy
     let bricks = this.props.glusterModel.bricks.slice();
+    let cacheConfig = this.props.glusterModel.cacheConfig.slice();
     let bricksChanged = false;
 
     let hostOptions = hosts.map((host)=>{
@@ -210,7 +211,7 @@ class BrickStep extends Component{
             <Col sm={2}>
               <Form>
                 <FormGroup validationState={this.state.raidValidation["stripe_size"].validationState}>
-                  <FormControl type="text"
+                  <FormControl type="number"
                     value={this.props.glusterModel.raidConfig["stripe_size"]}
                     onChange={(event)=>{this.onChangeNormal("stripe_size",event)}}
                     onBlur={(event)=>{this.onBlurNormal("stripe_size",event)}}
@@ -228,7 +229,7 @@ class BrickStep extends Component{
             <Col sm={2}>
               <Form>
                 <FormGroup validationState={this.state.raidValidation["disk_count"].validationState}>
-                  <FormControl type="text"
+                  <FormControl type="number"
                     value={this.props.glusterModel.raidConfig["disk_count"]}
                     onChange={(event)=>{this.onChangeNormal("disk_count",event)}}
                     onBlur={(event)=>{this.onBlurNormal("disk_count",event)}}
@@ -367,31 +368,31 @@ class BrickRow extends Component {
     render(){
     let brick = this.props.brick;
    //console.debug("BR.render brick",brick)
-    const gridValues=[2,2,2,1,3,1];
+    const gridValues=[2,2,2,1,2,3];
     return(
       <React.Fragment>
-        {this.props.index == 0 && <Row>
-          <Col sm={gridValues[0]}>
+        {this.props.index == 0 && <Row className="brick-row brick-title-row">
+          <Col sm={gridValues[0]} className="brick-col" >
                 <ControlLabel>Volume Name</ControlLabel>
           </Col>
-          <Col sm={gridValues[1]}>
+          <Col sm={gridValues[1]} className="brick-col" >
             <ControlLabel>Device Name</ControlLabel>
           </Col>
-          <Col sm={gridValues[2]}>
+          <Col sm={gridValues[2]} className="brick-col" >
                 <ControlLabel>Size(GB)</ControlLabel>
           </Col>
-          <Col sm={gridValues[3]}>
+          <Col sm={gridValues[3]} className="brick-col wizard-checkbox thinpool" >
                 <ControlLabel>Thinp</ControlLabel>
           </Col>
-          <Col sm={gridValues[4]}>
+          <Col sm={gridValues[4]} className="brick-col" >
                 <ControlLabel>Mount Point</ControlLabel>
           </Col>
-          <Col sm={gridValues[5]}>
-                <ControlLabel><div>Dedupe &</div>Compression</ControlLabel>
+          <Col sm={gridValues[5]} className="brick-col wizard-checkbox vdo" >
+                <ControlLabel>Dedupe & Compression</ControlLabel>
           </Col>
         </Row>}
-        <Row>
-          <Col sm={gridValues[0]}>
+        <Row className="brick-entry-row">
+          <Col sm={gridValues[0]} className="brick-col" >
             <Form>
               <FormGroup validationState={this.state.validation["volName"].validationState}>
                 <FormControl type="text"
@@ -406,9 +407,9 @@ class BrickRow extends Component {
               </FormGroup>
             </Form>
           </Col>
-          <Col sm={gridValues[1]}>
+          <Col sm={gridValues[1]} className="brick-col" >
             <Form>
-              <FormGroup validationState={this.state.validation["device"].validationState}>
+              <FormGroup className="brick-form-group"  validationState={this.state.validation["device"].validationState}>
                 <FormControl type="text"
                   value={brick["device"]}
                   onChange={(event)=>{
@@ -421,10 +422,10 @@ class BrickRow extends Component {
               </FormGroup>
             </Form>
           </Col>
-          <Col sm={gridValues[2]}>
+          <Col sm={gridValues[2]} className="brick-col" >
             <Form>
-              <FormGroup validationState={this.state.validation["size"].validationState}>
-                <FormControl type="text"
+              <FormGroup className="brick-form-group"  validationState={this.state.validation["size"].validationState}>
+                <FormControl type="number"
                   value={brick["size"]}
                   onChange={(event)=>{
                     this.onChange(brick, "size", event.target.value)
@@ -436,19 +437,20 @@ class BrickRow extends Component {
               </FormGroup>
             </Form>
           </Col>
-          <Col sm={gridValues[3]}>
+          <Col sm={gridValues[3]} className="brick-col wizard-checkbox thinpool" >
             <Form>
-              <FormGroup validationState={this.state.validation["thinPool"].validationState}>
+              <FormGroup className="brick-form-group"  validationState={this.state.validation["thinPool"].validationState}>
                 <Checkbox
+                  className="wizard-checkbox"
                   checked={brick["thinPool"]}
                   onChange={(event)=>{this.onChange(brick, "thinPool",event.target.checked)}}
                 />
               </FormGroup>
             </Form>
           </Col>
-          <Col sm={gridValues[4]}>
+          <Col sm={gridValues[4]} className="brick-col" >
             <Form>
-              <FormGroup validationState={this.state.validation["mountPoint"].validationState}>
+              <FormGroup className="brick-form-group"  validationState={this.state.validation["mountPoint"].validationState}>
                 <FormControl type="text"
                   value={brick["mountPoint"]}
                   onChange={(event)=>{
@@ -461,10 +463,11 @@ class BrickRow extends Component {
               </FormGroup>
             </Form>
           </Col>
-          <Col sm={gridValues[5]}>
+          <Col sm={gridValues[5]} className="brick-col wizard-checkbox vdo" >
             <Form>
-              <FormGroup validationState={this.state.validation["vdo"].validationState}>
+              <FormGroup className="brick-form-group"  validationState={this.state.validation["vdo"].validationState}>
                 <Checkbox
+                  className="wizard-checkbox vdo"
                   checked={brick["vdo"]}
                   onChange={(event)=>{this.onChange(brick, "vdo",event.target.checked)}}
                 />
