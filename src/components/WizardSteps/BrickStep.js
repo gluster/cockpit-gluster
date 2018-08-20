@@ -59,6 +59,10 @@ class BrickStep extends Component{
       {name: "RAID 6", value:"raid_6"},
       {name: "RAID 10", value:"raid_10"}
     ]
+    this.cacheModeOptions =[
+      {name:"writethrough",value:"writethrough"},
+      {name:"writeback",value:"writeback"}
+    ]
     // this.props.callback({isValid: this.state.brickValidation.every((isValid)=> isValid)});
     //console.debug("BS.Constructor: bricks", this.state.bricks);
   }
@@ -172,8 +176,8 @@ class BrickStep extends Component{
 
   render(){
    //console.debug("BS.props.volumes:",this.props.glusterModel.volumes);
-   // console.debug("BS.props.bricks:",this.props.glusterModel.bricks);
-   console.debug("BS.props.cacheConfig:",this.props.glusterModel.cacheConfig);
+   console.debug("BS.props.bricks:",this.props.glusterModel.bricks);
+   // console.debug("BS.props.cacheConfig:",this.props.glusterModel.cacheConfig);
     // let hosts = this.props.glusterModel.hosts;
     // let volumes = this.props.glusterModel.volumes;
     // let bricks = this.props.glusterModel.bricks;
@@ -307,8 +311,8 @@ class BrickStep extends Component{
           </Col>
         </Row>
 
-        <Row>
-          <Col sm={12} className="cache-config" >
+        <Row className="cache-config-rows">
+          <Col sm={12}  >
             <Form inline>
               <FormGroup validationState={null}>
                 <Checkbox
@@ -324,9 +328,58 @@ class BrickStep extends Component{
               </ControlLabel>
             </Form>
           </Col>
-          <Col className={cacheClassNames+" cache-config"}>
-            stuff
-
+        </Row>
+        <Row className={cacheClassNames+" cache-config-rows"}>
+          <Col sm={2}>
+            <ControlLabel>
+              SSD
+            </ControlLabel>
+          </Col>
+          <Col sm={2}>
+            <Form>
+              <FormGroup validationState={this.state.cacheValidation[this.state.hostIndex]["ssd"].validationState}>
+                <FormControl type="text"
+                  value={this.props.glusterModel.cacheConfig[this.state.hostIndex]["ssd"]}
+                  onChange={(event)=>{this.onChangeCacheConfig("ssd",event.target.value)}}
+                  onBlur={(event)=>{this.onBlurCacheConfig("ssd",event.target.value)}}
+                />
+              </FormGroup>
+            </Form>
+          </Col>
+        </Row>
+        <Row className={cacheClassNames+" cache-config-rows"}>
+          <Col sm={2}>
+            <ControlLabel>
+              LV Size(KB)
+            </ControlLabel>
+          </Col>
+          <Col sm={2}>
+            <Form>
+              <FormGroup validationState={this.state.cacheValidation[this.state.hostIndex]["size"].validationState}>
+                <FormControl type="number"
+                  value={this.props.glusterModel.cacheConfig[this.state.hostIndex]["size"]}
+                  onChange={(event)=>{this.onChangeCacheConfig("size",event.target.value)}}
+                  onBlur={(event)=>{this.onBlurCacheConfig("size",event.target.value)}}
+                />
+              </FormGroup>
+            </Form>
+          </Col>
+        </Row>
+        <Row className={cacheClassNames+" cache-config-rows"}>
+          <Col sm={2}>
+            <ControlLabel>
+              Cache Mode
+            </ControlLabel>
+          </Col>
+          <Col sm={3}>
+            <Form>
+              <FormGroup>
+                <Dropdown
+                  typeOptions={this.cacheModeOptions}
+                  onSelect={(value) => {this.onChangeCacheConfig("mode", value)}}
+                />
+              </FormGroup>
+            </Form>
           </Col>
         </Row>
       </Grid>

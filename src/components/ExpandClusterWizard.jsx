@@ -15,7 +15,18 @@ class ExpandClusterWizard extends Component {
       glusterModel: {
         hosts:["1","2","3"],
         volumes: [
-
+          {
+            name: "engine",
+            type: "replicate",
+            isArbiter: false,
+            brickDir: "/gluster_bricks/engine/engine"
+          },
+          {
+            name: "data",
+            type: "replicate",
+            isArbiter: false,
+            brickDir: "/gluster_bricks/data/data"
+          }
         ],
         bricks: [],
         cacheConfig: [
