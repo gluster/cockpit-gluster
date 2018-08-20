@@ -13,7 +13,7 @@ class ExpandClusterWizard extends Component {
     super(props)
     this.state = {
       glusterModel: {
-        hosts:["1","2","3"],
+        hosts:["","",""],
         volumes: [
           {
             name: "engine",
