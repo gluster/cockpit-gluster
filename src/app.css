@@ -88,10 +88,6 @@ div.wizard-step-container {
   padding: 1% 5%;
 }
 
-div.wizard-bricksdir{
-  margin-left:2.8%;
-}
-
 div.brick-col {
   padding-left: 0px;
   padding-right:0px;
@@ -120,6 +116,19 @@ div.brick-form-group{
 .brick-title-row, .brick-entry-row{
   margin-left:8%;
 }
+
+div.wizard-brick-rows{
+  margin-left:2.8%;
+}
+div.cache-config {
+  margin-left:10.8%;
+  padding-left:14px;
+}
+
+.cache-label {
+  margin-left: 10px;
+}
+
 .brick-entry-row{
   margin-bottom:0px;
 }

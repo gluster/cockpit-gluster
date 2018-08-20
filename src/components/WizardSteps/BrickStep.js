@@ -14,11 +14,27 @@ class BrickStep extends Component{
         raid_type:{validation:false,validationState:null},
         stripe_size:{validation:false,validationState:null},
         disk_count:{validation:false,validationState:null}
-      }
+      },
+      cacheValidation: []
     }
+    // this.defaultCacheMode = {
+    //   cache: false,
+    //   ssd: "/dev/sdc",
+    //   size: 20,
+    //   mode: "writethrough"
+    // }
+
     this.validators = {
       stripe_size:(value) => {return notEmpty(value)},
       disk_count:(value) => {return notEmpty(value)}
+    }
+
+    while(this.state.cacheValidation.length < this.props.glusterModel.cacheConfig.length){
+      let hostCacheValidation = {};
+      for (let key in this.props.glusterModel.cacheConfig[this.state.hostIndex]){
+        hostCacheValidation[key] = {validation:false,validationState:null}
+      }
+      this.state.cacheValidation.push(hostCacheValidation);
     }
 
     //for generating bricks from volumes
@@ -93,7 +109,6 @@ class BrickStep extends Component{
       this.props.callback({raidConfig: newRaidConfig});
       return newState
     });
-    let validation
   }
   onBlurRaidConfig = (key,value) => {
     this.setState((prevState)=>{
@@ -106,6 +121,40 @@ class BrickStep extends Component{
       newState.raidValidation[key].validation = validation;
       newState.raidValidation[key].validationState = validation ? null : 'error';
      //console.debug("BS.newRaidValidationState",newState.raidValidation[key].validationState)
+      return newState
+    });
+  }
+
+  onChangeCacheConfig = (key, value) => {
+    this.setState((prevState)=>{
+      let newState = {};
+      let newCacheConfig = this.props.glusterModel.cacheConfig.slice();
+      let validation = true;
+      if (typeof(this.validators[key]) == 'function'){
+        validation = this.validators[key](value);
+      }
+      newCacheConfig[prevState.hostIndex][key] = value;
+      if (prevState.hostIndex == 0){
+        for (let hostIndex = 1; hostIndex < newCacheConfig.length; hostIndex++){
+          newCacheConfig[hostIndex][key] = value;
+        }
+      }
+      newState.cacheValidation = prevState.cacheValidation;
+      newState.cacheValidation[prevState.hostIndex][key].validation = validation;
+      this.props.callback({cacheConfig: newCacheConfig});
+      return newState
+    });
+  }
+  onBlurCacheConfig = (key, value) => {
+    this.setState((prevState)=>{
+      let newState = {};
+
+      let validation = true;
+      if (typeof(this.validators[key]) == 'function'){
+        validation = this.validators[key](value);
+      }
+      newState.cacheValidation = prevState.cacheValidation;
+      newState.cacheValidation[prevState.hostIndex][key].validation = validation;
       return newState
     });
   }
@@ -123,40 +172,19 @@ class BrickStep extends Component{
 
   render(){
    //console.debug("BS.props.volumes:",this.props.glusterModel.volumes);
-   //console.debug("BS.props.bricks:",this.props.glusterModel.bricks);
-    //generating bricks from vols
-    let hosts = this.props.glusterModel.hosts;
-    let volumes = this.props.glusterModel.volumes;
-    //using slice() to create a local copy
-    let bricks = this.props.glusterModel.bricks.slice();
-    let cacheConfig = this.props.glusterModel.cacheConfig.slice();
-    let bricksChanged = false;
+   // console.debug("BS.props.bricks:",this.props.glusterModel.bricks);
+   console.debug("BS.props.cacheConfig:",this.props.glusterModel.cacheConfig);
+    // let hosts = this.props.glusterModel.hosts;
+    // let volumes = this.props.glusterModel.volumes;
+    // let bricks = this.props.glusterModel.bricks;
+
+    let { hosts, volumes, bricks, cacheConfig } = this.props.glusterModel;
+    let cacheClassNames = cacheConfig[this.state.hostIndex].cache ? "" : "hidden";
 
     let hostOptions = hosts.map((host)=>{
       return {name: host, value:host}
     });
 
-    while(bricks.length < hosts.length){
-      bricks.push([]);
-    }
-    for (let hostIndex = 0;hostIndex < hosts.length; hostIndex++){
-      while (bricks[hostIndex].length < volumes.length){
-        let index = bricks[hostIndex].length;
-        let brick = {};
-        for (let key in this.getDefaultValue){
-          brick[key] = this.getDefaultValue[key](volumes[index]);
-        }
-        bricks[hostIndex].push(
-          brick
-          // {volName: volumes[index].name, thinPool:false, device: "/dev/sdb", size: 100, mountPoint: "/gluster_bricks/"+volumes[index].name+"/",vdo: false}
-        );
-        bricksChanged = true;
-      }
-    }
-
-    if (bricksChanged){
-      this.props.callback({bricks: bricks});
-    }
     let brickRows = [];
     let volumeCount = volumes.length;
     for (let index = 0; index < volumeCount; index++){
@@ -274,8 +302,31 @@ class BrickStep extends Component{
         </Row>
 
         <Row>
-          <Col className={"wizard-bricksdir"} sm={12}>
+          <Col className={"wizard-brick-rows"} sm={12}>
               {brickRows}
+          </Col>
+        </Row>
+
+        <Row>
+          <Col sm={12} className="cache-config" >
+            <Form inline>
+              <FormGroup validationState={null}>
+                <Checkbox
+                  className="wizard-checkbox cache-checkbox"
+                  checked={this.props.glusterModel.cacheConfig[this.state.hostIndex]["cache"]}
+                  onChange={(event)=>{
+                    this.onChangeCacheConfig("cache",event.target.checked)
+                  }}
+                />
+              </FormGroup>
+              <ControlLabel className="cache-label">
+                Configure LV Cache
+              </ControlLabel>
+            </Form>
+          </Col>
+          <Col className={cacheClassNames+" cache-config"}>
+            stuff
+
           </Col>
         </Row>
       </Grid>
@@ -306,19 +357,19 @@ class BrickRow extends Component {
       }
       //only keys with values derived from the volume go here.
       //entries are (volume) => {return value} functions
-      this.getDefaultValue = {
-        volName: (props) => {return props.volume.name},
-        device: (props) => "/dev/sdb",
-        size: (props) =>  100,
-        thinPool: (props) => true,
-        mountPoint: (props) => {
-          let mountPointSplit = props.volume.brickDir.split('/');
-          mountPointSplit.pop();
-          let mountPoint = mountPointSplit.join('/')
-          return mountPoint
-        },
-        vdo: (props) => false
-      }
+      // this.getDefaultValue = {
+      //   volName: (props) => {return props.volume.name},
+      //   device: (props) => "/dev/sdb",
+      //   size: (props) =>  100,
+      //   thinPool: (props) => true,
+      //   mountPoint: (props) => {
+      //     let mountPointSplit = props.volume.brickDir.split('/');
+      //     mountPointSplit.pop();
+      //     let mountPoint = mountPointSplit.join('/')
+      //     return mountPoint
+      //   },
+      //   vdo: (props) => false
+      // }
 
 
       for(let key in this.validators){

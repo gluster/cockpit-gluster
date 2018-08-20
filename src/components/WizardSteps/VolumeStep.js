@@ -57,8 +57,10 @@ class VolumeStep extends Component{
     this.setState((prevState)=>{
       let volumes = prevState.volumes;
       let volumeValidation = prevState.volumeValidation;
+      console.debug("before:",volumes);
       volumes.splice(index,1);
       volumeValidation.splice(index,1);
+      console.debug("after:",volumes);
       this.props.callback({volumes:volumes,isValid: false});
       return {volumes: volumes, volumeValidation: volumeValidation}
     });

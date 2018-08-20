@@ -6,6 +6,8 @@ import VolumeStep from './WizardSteps/VolumeStep'
 import BrickStep from './WizardSteps/BrickStep'
 import ReviewStep from './WizardSteps/ReviewStep'
 
+
+
 class ExpandClusterWizard extends Component {
   constructor(props){
     super(props)
@@ -13,21 +15,12 @@ class ExpandClusterWizard extends Component {
       glusterModel: {
         hosts:["1","2","3"],
         volumes: [
-          {
-            name: "hah",
-            type: "replicate",
-            isArbiter: false,
-            brickDir: "/gluster_bricks/hah/hah"
-          },
-          {
-            name: "hawwh",
-            type: "replicate",
-            isArbiter: false,
-            brickDir: "/gluster_bricks/hawwh/hawwh"
-          }
+
         ],
         bricks: [],
-        cacheConfig: [],
+        cacheConfig: [
+
+        ],
         raidConfig:{
           hostIndex: 0,
           raid_type:"jbod",
@@ -41,9 +34,28 @@ class ExpandClusterWizard extends Component {
       isBackDisabled: false,
       isNextDisabled: false,
       showValidation: false,
-      activeStepIndex: 2
+      activeStepIndex: 0
     }
     this.title="Expand Cluster";
+    this.defaultCacheMode = {
+          cache: false,
+          ssd: "/dev/sdc",
+          size: 20,
+          mode: "writethrough"
+    }
+    this.getDefaultBrickValue = {
+      volName: (volume) => {return volume.name},
+      device: (volume) => "/dev/sdb",
+      size: (volume) =>  100,
+      thinPool: (volume) => true,
+      mountPoint: (volume) => {
+        let mountPointSplit = volume.brickDir.split('/');
+        mountPointSplit.pop();
+        let mountPoint = mountPointSplit.join('/')
+        return mountPoint
+      },
+      vdo: (volume) => false
+    }
   }
 
   close = () => {
@@ -63,10 +75,14 @@ class ExpandClusterWizard extends Component {
   }
   handleStepChange = (index) => {
     this.setState((prevState)=>{
-      if(!(this.state.isNextDisabled || this.state.isBackDisabled)){
-        return {activeStepIndex: index}
+      let newState = { activeStepIndex: index}
+      // handle exits
+      this.handleExit(prevState.activeStepIndex,index);
+      if((this.state.isNextDisabled || this.state.isBackDisabled)){
+        newState.activeStepIndex = prevState.activeStepIndex;
       }
-    })
+      return newState;
+    });
   }
   finish = () => {
     //console.debug("Final");
@@ -78,20 +94,11 @@ class ExpandClusterWizard extends Component {
     //console.debug("Cancel");
   }
   onBack = (e) => {
-    this.setState((prevState)=>{
-      return {activeStepIndex: prevState.activeStepIndex - 1, showValidation: "false"}
-    });
+    this.handleStepChange(this.state.activeStepIndex-1)
   }
   onNext = (e) => {
     //console.debug("Next");
-    this.setState((prevState)=>{
-      if (prevState.isNextDisabled){
-        return {showValidation: true}
-      }
-      else{
-        return {activeStepIndex: prevState.activeStepIndex + 1, showValidation: false }
-      }
-    });
+    this.handleStepChange(this.state.activeStepIndex+1)
   }
   handleHostStep = ({hosts, isValid}) => {
     ////console.debug("EC.hostChanged,hosts,isValid:",hosts,isValid)
@@ -118,7 +125,7 @@ class ExpandClusterWizard extends Component {
       return newState
     });
   }
-  handleBrickStep = ({raidConfig, bricks, isValid}) => {
+  handleBrickStep = ({raidConfig, bricks, cacheConfig, isValid}) => {
    //console.debug("EC.handleBrickStep:");
     this.setState((prevState)=>{
       let newState = {};
@@ -132,12 +139,62 @@ class ExpandClusterWizard extends Component {
         newState.glusterModel = prevState.glusterModel;
         newState.glusterModel.raidConfig = raidConfig;
       }
+      if (cacheConfig){
+       //console.debug("EC.handleBrickStep.cacheConfig",cacheConfig);
+        newState.glusterModel = prevState.glusterModel;
+        newState.glusterModel.cacheConfig = cacheConfig;
+      }
       return newState
+    });
+  }
+  handleExit = (prevIndex,index) => {
+    switch (prevIndex){
+      case 0:
+        this.hostExit();
+      break;
+      case 1:
+        this.volumeExit();
+      break;
+    }
+  }
+  hostExit = () => {
+    console.debug("EC.hostExit")
+    this.setState((prevState)=>{
+      let newState ={}
+      newState.glusterModel = prevState.glusterModel;
+      while(newState.glusterModel.cacheConfig.length < prevState.glusterModel.hosts.length){
+        newState.glusterModel.cacheConfig.push(Object.assign({},this.defaultCacheMode));
+      }
+      console.debug("EC.hostExit cacheConfig",newState.glusterModel.cacheConfig)
+      return newState;
+    });
+  }
+  volumeExit = () => {
+    console.debug("EC.volumeExit")
+    this.setState((prevState)=>{
+      let newState = {};
+      let hosts = prevState.glusterModel.hosts;
+      let volumes = prevState.glusterModel.volumes;
+      newState.glusterModel = this.state.glusterModel;
+      newState.glusterModel.bricks = []
+      while (newState.glusterModel.bricks.length < hosts.length){
+        let hostBricks = [];
+        for(let volumeIndex = 0; volumeIndex < volumes.length;volumeIndex++){
+          let volumeBrick = {};
+          for (let key in this.getDefaultBrickValue){
+            volumeBrick[key] = this.getDefaultBrickValue[key](volumes[volumeIndex]);
+          }
+          hostBricks.push(volumeBrick);
+        }
+        newState.glusterModel.bricks.push(hostBricks);
+      }
+      console.debug("EC.volumeExit bricks",newState.glusterModel.bricks)
+      return newState;
     });
   }
 
   render(){
-   console.debug("EC.render",JSON.stringify(this.state.glusterModel));
+   // console.debug("EC.render",JSON.stringify(this.state.glusterModel));
     return (
       <GeneralWizard
         title={this.title}
