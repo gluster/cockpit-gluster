@@ -1,0 +1,28 @@
+vars:
+   # Stripe unit size always in KiB
+   gluster_infra_stripe_unit_size: 128
+   gluster_infra_lv_poolmetadatasize: 4G
+
+   gluster_infra_pvs: /dev/vdb,/dev/vdc
+
+   # Create a thin volume
+   gluster_infra_lv_logicalvols:
+      - { lvname: 'glusterstore_data', lvsize: '400G' }
+      - { lvname: 'glusterstore_vmstore', lvsize: '400G' }
+
+   # Create a thick volume name
+   gluster_infra_lv_thicklvname: glusterfs_thicklv
+   gluster_infra_lv_thicklvsize: 10G
+
+   # Mount the devices
+   gluster_infra_mount_devices:
+      - { path: '/store/data',   lv: glusterstore_data }
+      - { path: '/store/vmstore',   lv: glusterstore_vmstore }
+      - { path: '/store/engine', lv: "{{ gluster_infra_lv_thicklvname }}"}
+
+   # Set up GlusterFS hyperconverged interface
+   gluster_features_hci_cluster: "{{ groups['hc-nodes'] }}"
+   gluster_features_hci_volumes:
+      - { volname: 'engine', brick: '/store/engine/engine' }
+      - { volname: 'data', brick: '/store/data/data' }
+      - { volname: 'vmstore', brick: '/store/vmstore/vmstore' }
