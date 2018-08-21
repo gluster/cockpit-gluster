@@ -28,9 +28,13 @@ class GlusterManagement extends Component {
     this.getPeers();
     this.getVolumes();
   }
+  onCancelExpandClusterWizard = (event) =>{
+    this.setState({expandClusterStarted: false});
+  }
 
   generateAuthHeader(){
-    let secret = "629315144b8fca70c26c7f536925d97baf11de332ba1fffdbc29487d5b5c7fe4";
+    //TODO: get secret from fs
+    let secret = "fake_secret";
     let algorithm = "HS256";
     let app_id = "cockpit-gluster";
     let time = Math.floor(new Date().getTime/1000);
@@ -45,7 +49,6 @@ class GlusterManagement extends Component {
   getPeers(){
     let that = this;
     let headers = { "Authorization" : this.generateAuthHeader() };
-    // console.log("headers", headers);
     let promise =  this.gluster_api.get("/v1/peers")
     promise
     .then(function(result){
@@ -166,7 +169,7 @@ class GlusterManagement extends Component {
               }
             </div>
           </div>
-          {this.state.expandClusterStarted && <ExpandClusterWizard ref={this.expandClusterWizard}/>}
+          {this.state.expandClusterStarted && <ExpandClusterWizard onCancel={this.onCancelExpandClusterWizard} ref={this.expandClusterWizard}/>}
         </div>
       </div>
     )

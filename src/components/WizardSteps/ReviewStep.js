@@ -19,26 +19,66 @@ class ReviewStep extends Component {
     super(props)
     this.state = {
       isEditing: false,
-      inventory: ""
+      inventory: this.generateInventory(this.props.glusterModel)
     }
   }
 
-  nullIfEmpty = (po) => {
-    return JSON.stringify(po) == '{}' ? null : po;
+  handleEmpty = (po) => {
+    return JSON.stringify(po) == '{}' ? "" : po;
+  }
+  uniqueStringsArray = (arr) => {
+      var u = {}, a = [];
+      for(var i = 0, l = arr.length; i < l; ++i){
+          if(!u.hasOwnProperty(arr[i])) {
+              a.push(arr[i]);
+              u[arr[i]] = 1;
+          }
+      }
+      return a;
   }
   generateInventory = (glusterModel) =>{
     let groups = {};
     let { hosts, volumes, bricks, raidConfig, cacheConfig } = glusterModel;
+    groups.hc_nodes = {};
     groups.hc_nodes.hosts = {};
-    let groupVars ={}
+    let groupVars = {}
+    groupVars.gluster_infra_stripe_unit_size = raidConfig.stripe_size;
+    groupVars.gluster_infra_disktype = raidConfig.raid_type;
+    groupVars.gluster_infra_diskcount = raidConfig.disk_count;
+
+
     for (let hostIndex = 0; hostIndex < hosts.length;hostIndex++){
       let hostVars = {}
+      let hostBricks = bricks[hostIndex]
+      hostVars.gluster_infra_lv_thicklvname = `gluster_lv_${hostBricks[0].volName}`
+      hostVars.gluster_infra_lv_thicklvsize = `gluster_lv_${hostBricks[0].size}`
 
-        groups.hc_nodes[hosts[hostIndex]] = nullIfEmpty(hostVars)
+      hostVars.gluster_infra_pvs = this.uniqueStringsArray(hostBricks.map((brick)=>brick.device));
+      hostVars.gluster_infra_lv_logicalvols = hostBricks
+      .slice(1,hostBricks.length)
+      .map((brick)=>{
+        return {
+          lvname: `gluster_lv_${brick.volName}`,
+          lvsize: `${brick.size}G`
+        };
+      });
+      hostVars.gluster_infra_mount_devices = hostBricks.map((brick)=>{
+        return {
+          path: brick.mountPoint,
+          lv: `gluster_lv_${brick.volName}`
+        }
+      });
+      groups.hc_nodes.hosts[hosts[hostIndex]] = hostVars;
     }
-    groups.hc_nodes.vars = nullIfEmpty(groupVars);
 
-    return yaml.safeDump
+    // groupVars.gluster_infra_lv_logicalvols = [];
+    // for(let volumeIndex = 0; volumeIndex < volumes.length;volumeIndex++){
+    //   let volume = volumes[volumeIndex];
+    //
+    // }
+    groups.hc_nodes.vars = groupVars;
+
+    return yaml.safeDump(groups)
 
   }
   handleEdit = (event) => {
@@ -48,7 +88,7 @@ class ReviewStep extends Component {
     this.setState({isEditing:false});
   }
   handleTextChange = (event) => {
-    this.setState({inventory: event.target.value})
+    this.setState({inventory: event.target.value});
   }
   render(){
     return (
@@ -59,7 +99,7 @@ class ReviewStep extends Component {
     <div className="panel-heading">
         <span className="pficon-settings"></span>
         <span>
-            Generated Gdeploy configuration : {this.props.configFilePath}
+            Generated ansible inventory : {this.props.configFilePath}
         </span>
         <div className="pull-right">
           {this.state.isEditing &&
@@ -84,7 +124,7 @@ class ReviewStep extends Component {
         </div>
     </div>
     <textarea className="wizard-preview"
-        value={JSON.stringify(this.props.glusterModel)} onChange={this.handleTextChange} readOnly={!this.state.isEditing}>
+        value={this.state.inventory} onChange={this.handleTextChange} readOnly={!this.state.isEditing}>
     </textarea>
 </div>
 
