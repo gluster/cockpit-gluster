@@ -94,6 +94,7 @@ class ExpandClusterWizard extends Component {
       this.handleExit(prevState.activeStepIndex,index);
       if((this.state.isNextDisabled || this.state.isBackDisabled)){
         newState.activeStepIndex = prevState.activeStepIndex;
+        newState.showValidation = true;
       }
       return newState;
     });
