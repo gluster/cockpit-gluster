@@ -99,8 +99,8 @@ class ExpandClusterWizard extends Component {
       return newState;
     });
   }
-  finish = () => {
-    //console.debug("Final");
+  finish = (event) => {
+    console.debug("Final");
   }
 
   onBack = (e) => {

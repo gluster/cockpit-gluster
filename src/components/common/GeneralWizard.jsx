@@ -97,7 +97,7 @@ const WizFooter = ({
       }
       <Button
         bsStyle="primary"
-        onClick={isFinalStep ? onClose : onNext}
+        onClick={isFinalStep ? onFinal : onNext}
         disabled={isNextDisabled}
       >
         {isFinalStep ?
