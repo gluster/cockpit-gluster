@@ -1,28 +1,54 @@
-vars:
-   # Stripe unit size always in KiB
-   gluster_infra_stripe_unit_size: 128
-   gluster_infra_lv_poolmetadatasize: 4G
+hc_nodes:
+  hosts:
+    10.70.43.89:
+      var1: wow_host
+      gluster_infra_pvs: /dev/vdb
 
-   gluster_infra_pvs: /dev/vdb,/dev/vdc
+      gluster_infra_lv_thicklvname: glusterfs_thicklv
+      gluster_infra_lv_thicklvsize: 10G
 
-   # Create a thin volume
-   gluster_infra_lv_logicalvols:
-      - { lvname: 'glusterstore_data', lvsize: '400G' }
-      - { lvname: 'glusterstore_vmstore', lvsize: '400G' }
+    10.70.42.209:
+    10.70.43.184: null
 
-   # Create a thick volume name
-   gluster_infra_lv_thicklvname: glusterfs_thicklv
-   gluster_infra_lv_thicklvsize: 10G
+  vars:
+    var1: wow_group
+    gluster_infra_disktype: RAID6
+    gluster_infra_diskcount: 12
 
-   # Mount the devices
-   gluster_infra_mount_devices:
-      - { path: '/store/data',   lv: glusterstore_data }
-      - { path: '/store/vmstore',   lv: glusterstore_vmstore }
-      - { path: '/store/engine', lv: "{{ gluster_infra_lv_thicklvname }}"}
+    #VDO config
+    gluster_infra_vdo:
+      - { name: 'vdo_sdb', device: '/dev/sdb', logicalsize: '7000G' }
+    gluster_infra_vdo_blockmapcachesize: 128M
+    gluster_infra_vdo_slabsize: 32G
+    gluster_infra_vdo_readcachesize: 20M
+    gluster_infra_vdo_readcache: enabled
+    gluster_infra_vdo_writepolicy: auto
+    gluster_infra_vdo_emulate512: on
+    # Stripe unit size always in KiB
+    gluster_infra_stripe_unit_size: 256
+    gluster_infra_lv_poolmetadatasize: 4G
+    gluster_infra_pvs: /dev/vdo_sdb
+    gluster_infra_vg_name: gluster_vg_sdb
+    gluster_infra_lv_thinpoolname: gluster_thinpool_sdb
 
-   # Set up GlusterFS hyperconverged interface
-   gluster_features_hci_cluster: "{{ groups['hc-nodes'] }}"
-   gluster_features_hci_volumes:
-      - { volname: 'engine', brick: '/store/engine/engine' }
-      - { volname: 'data', brick: '/store/data/data' }
-      - { volname: 'vmstore', brick: '/store/vmstore/vmstore' }
+    # Create a thin volume
+    gluster_infra_lv_logicalvols:
+      - { lvname: 'gluster_lv_data', lvsize: '300G' }
+      - { lvname: 'gluster_lv_vmstore', lvsize: '300G' }
+
+    # Create a thick volume name
+    gluster_infra_lv_thicklvname: gluster_lv_engine
+    gluster_infra_lv_thicklvsize: 100G
+
+    # Mount the devices
+    gluster_infra_mount_devices:
+      - { path: '/gluster_bricks/data',   lv: gluster_lv_data }
+      - { path: '/gluster_bricks/vmstore',   lv: gluster_lv_vmstore }
+      - { path: '/gluster_bricks/engine', lv: "{{ gluster_infra_lv_thicklvname }}"}
+
+    # Set up GlusterFS hyperconverged interface
+    gluster_features_hci_cluster: "{{ groups['hc-nodes'] }}"
+    gluster_features_hci_volumes:
+      - { volname: 'engine', brick: '/gluster_bricks/engine/engine' }
+      - { volname: 'data', brick: '/gluster_bricks/data/data' }
+      - { volname: 'vmstore', brick: '/gluster_bricks/vmstore/vmstore' }
