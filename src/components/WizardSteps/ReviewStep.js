@@ -71,11 +71,15 @@ class ReviewStep extends Component {
       groups.hc_nodes.hosts[hosts[hostIndex]] = hostVars;
     }
 
-    // groupVars.gluster_infra_lv_logicalvols = [];
-    // for(let volumeIndex = 0; volumeIndex < volumes.length;volumeIndex++){
-    //   let volume = volumes[volumeIndex];
-    //
-    // }
+    groupVars.gluster_features_hci_volumes = [];
+    for(let volumeIndex = 0; volumeIndex < volumes.length;volumeIndex++){
+      let volume = volumes[volumeIndex];
+      groupVars.gluster_features_hci_volumes.push({
+        volname: volume.name,
+        brick: volume.brickDir,
+        arbiter: volume.isArbiter
+      });
+    }
     groups.hc_nodes.vars = groupVars;
 
     return yaml.safeDump(groups)

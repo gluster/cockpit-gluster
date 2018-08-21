@@ -24,6 +24,7 @@ hc_nodes:
     gluster_infra_vdo_readcache: enabled
     gluster_infra_vdo_writepolicy: auto
     gluster_infra_vdo_emulate512: on
+
     # Stripe unit size always in KiB
     gluster_infra_stripe_unit_size: 256
     gluster_infra_lv_poolmetadatasize: 4G
@@ -47,7 +48,7 @@ hc_nodes:
       - { path: '/gluster_bricks/engine', lv: "{{ gluster_infra_lv_thicklvname }}"}
 
     # Set up GlusterFS hyperconverged interface
-    gluster_features_hci_cluster: "{{ groups['hc-nodes'] }}"
+    gluster_features_hci_cluster: "{{ groups['hc_nodes'] }}"
     gluster_features_hci_volumes:
       - { volname: 'engine', brick: '/gluster_bricks/engine/engine' }
       - { volname: 'data', brick: '/gluster_bricks/data/data' }
