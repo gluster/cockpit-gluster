@@ -52,7 +52,6 @@ class ReviewStep extends Component {
       let hostBricks = bricks[hostIndex]
       hostVars.gluster_infra_lv_thicklvname = `gluster_lv_${hostBricks[0].volName}`
       hostVars.gluster_infra_lv_thicklvsize = `gluster_lv_${hostBricks[0].size}`
-<<<<<<< HEAD
 
       hostVars.gluster_infra_pvs = this.uniqueStringsArray(hostBricks.map((brick)=>brick.device));
       hostVars.gluster_infra_lv_logicalvols = hostBricks
@@ -83,34 +82,6 @@ class ReviewStep extends Component {
     }
     groups.hc_nodes.vars = groupVars;
 
-=======
-
-      hostVars.gluster_infra_pvs = this.uniqueStringsArray(hostBricks.map((brick)=>brick.device));
-      hostVars.gluster_infra_lv_logicalvols = hostBricks
-      .slice(1,hostBricks.length)
-      .map((brick)=>{
-        return {
-          lvname: `gluster_lv_${brick.volName}`,
-          lvsize: `${brick.size}G`
-        };
-      });
-      hostVars.gluster_infra_mount_devices = hostBricks.map((brick)=>{
-        return {
-          path: brick.mountPoint,
-          lv: `gluster_lv_${brick.volName}`
-        }
-      });
-      groups.hc_nodes.hosts[hosts[hostIndex]] = hostVars;
-    }
-
-    // groupVars.gluster_infra_lv_logicalvols = [];
-    // for(let volumeIndex = 0; volumeIndex < volumes.length;volumeIndex++){
-    //   let volume = volumes[volumeIndex];
-    //
-    // }
-    groups.hc_nodes.vars = groupVars;
-
->>>>>>> ae1333259986e13a96ee33bd06699977cae6984a
     return yaml.safeDump(groups)
 
   }

@@ -1,0 +1,11 @@
+- name: Setup backend and deploy HCI
+  group_name: hc_nodes
+  hosts: '{{ group_name }}'
+  remote_user: root
+  gather_facts: yes
+  vars:
+    gluster_features_hci_cluster: "{{ groups['{{ group_name }}'] }}"
+
+  roles:
+     - gluster.infra
+     - gluster.features
