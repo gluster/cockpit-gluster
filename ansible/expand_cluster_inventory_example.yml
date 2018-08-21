@@ -7,8 +7,8 @@ hc_nodes:
       gluster_infra_lv_thicklvname: glusterfs_thicklv
       gluster_infra_lv_thicklvsize: 10G
 
-    10.70.42.209:
-    10.70.43.184: null
+    "10.70.42.209":
+    "10.70.43.184": ""
 
   vars:
     var1: wow_group

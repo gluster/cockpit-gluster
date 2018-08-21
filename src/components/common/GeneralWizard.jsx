@@ -38,6 +38,7 @@ class GeneralWizard extends Component {
         onClose={this.props.onClose}
         stepCount={this.children.length}
         activeStepIndex={this.props.activeStepIndex}
+        finalText={this.props.finalText}
 
       />
     </Wizard>

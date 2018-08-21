@@ -34,7 +34,7 @@ class ExpandClusterWizard extends Component {
         ],
         raidConfig:{
           hostIndex: 0,
-          raid_type:"jbod",
+          raid_type:"JBOD",
           stripe_size:256,
           disk_count:12
         }
@@ -58,7 +58,10 @@ class ExpandClusterWizard extends Component {
       volName: (volume) => {return volume.name},
       device: (volume) => "/dev/sdb",
       size: (volume) =>  100,
-      thinPool: (volume) => true,
+      //HACK: waiting for multiple thicklv support from gluster-ansible
+      //TODO: honor actual thicklv requests
+      //WARNING: For now, the first vol is always thick. Regardless of this value
+      thinPool: (volume) => !(volume.name.indexOf('engine') > -1),
       mountPoint: (volume) => {
         let mountPointSplit = volume.brickDir.split('/');
         mountPointSplit.pop();
@@ -98,12 +101,7 @@ class ExpandClusterWizard extends Component {
   finish = () => {
     //console.debug("Final");
   }
-  onCancel = (event) => {
-    if (event){
-      //console.debug(event);
-    }
-    //console.debug("Cancel");
-  }
+
   onBack = (e) => {
     this.handleStepChange(this.state.activeStepIndex-1)
   }
@@ -212,11 +210,12 @@ class ExpandClusterWizard extends Component {
         show={this.state.show}
         onNext={this.onNext}
         onBack={this.onBack}
-        onCancel={this.onCancel}
+        onCancel={this.props.onCancel}
         onFinal={this.finish}
         onClose={this.close}
         handleStepChange={this.handleStepChange}
         activeStepIndex={this.state.activeStepIndex}
+        finalText="Deploy"
         >
         <HostStep
           stepName="Hosts"
@@ -237,7 +236,7 @@ class ExpandClusterWizard extends Component {
         showValidation={this.state.showValidation}
       />
       <ReviewStep
-        stepName="Review"
+        stepName="Preview"
         glusterModel={this.state.glusterModel}
       />
 

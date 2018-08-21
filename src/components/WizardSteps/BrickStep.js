@@ -54,10 +54,10 @@ class BrickStep extends Component{
 
 
     this.raidOptions = [
-      {name: "JBOD", value:"jbod"},
-      {name: "RAID 5", value:"raid_5"},
-      {name: "RAID 6", value:"raid_6"},
-      {name: "RAID 10", value:"raid_10"}
+      {name: "JBOD", value:"JBOD"},
+      {name: "RAID 5", value:"RAID5"},
+      {name: "RAID 6", value:"RAID6"},
+      {name: "RAID 10", value:"RAID10"}
     ]
     this.cacheModeOptions =[
       {name:"writethrough",value:"writethrough"},
@@ -408,22 +408,6 @@ class BrickRow extends Component {
         size:  (value) => notEmpty(value),
         mountPoint: (value) => notEmpty(value),
       }
-      //only keys with values derived from the volume go here.
-      //entries are (volume) => {return value} functions
-      // this.getDefaultValue = {
-      //   volName: (props) => {return props.volume.name},
-      //   device: (props) => "/dev/sdb",
-      //   size: (props) =>  100,
-      //   thinPool: (props) => true,
-      //   mountPoint: (props) => {
-      //     let mountPointSplit = props.volume.brickDir.split('/');
-      //     mountPointSplit.pop();
-      //     let mountPoint = mountPointSplit.join('/')
-      //     return mountPoint
-      //   },
-      //   vdo: (props) => false
-      // }
-
 
       for(let key in this.validators){
         let validation = false;
@@ -499,7 +483,9 @@ class BrickRow extends Component {
           <Col sm={gridValues[0]} className="brick-col" >
             <Form>
               <FormGroup validationState={this.state.validation["volName"].validationState}>
-                <FormControl type="text"
+                <FormControl
+                  type="text"
+                  disabled={true}
                   value={brick["volName"]}
                   onChange={(event)=>{
                     this.onChange(brick, "volName", event.target.value)
@@ -545,6 +531,7 @@ class BrickRow extends Component {
             <Form>
               <FormGroup className="brick-form-group"  validationState={this.state.validation["thinPool"].validationState}>
                 <Checkbox
+                  disabled={true}
                   className="wizard-checkbox"
                   checked={brick["thinPool"]}
                   onChange={(event)=>{this.onChange(brick, "thinPool",event.target.checked)}}
@@ -555,7 +542,9 @@ class BrickRow extends Component {
           <Col sm={gridValues[4]} className="brick-col" >
             <Form>
               <FormGroup className="brick-form-group"  validationState={this.state.validation["mountPoint"].validationState}>
-                <FormControl type="text"
+                <FormControl
+                  type="text"
+                  disabled={true}
                   value={brick["mountPoint"]}
                   onChange={(event)=>{
                     this.onChange(brick, "mountPoint", event.target.value)

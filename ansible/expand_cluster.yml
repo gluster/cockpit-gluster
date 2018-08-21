@@ -4,7 +4,6 @@
   gather_facts: yes
   tasks:
     - ping:
-        null
     - debug:
         var: var1
 
