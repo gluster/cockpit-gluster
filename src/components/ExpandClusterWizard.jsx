@@ -11,6 +11,7 @@ import ReviewStep from './WizardSteps/ReviewStep'
 class ExpandClusterWizard extends Component {
   constructor(props){
     super(props)
+    //TODO: push glusterModel out to seperate file and handle different defaults
     this.state = {
       glusterModel: {
         hosts:["","",""],
@@ -68,7 +69,8 @@ class ExpandClusterWizard extends Component {
         let mountPoint = mountPointSplit.join('/')
         return mountPoint
       },
-      vdo: (volume) => false
+      vdo: (volume) => false,
+      vdoSize: (volume) => 200
     }
   }
 
@@ -91,6 +93,7 @@ class ExpandClusterWizard extends Component {
     this.setState((prevState)=>{
       let newState = { activeStepIndex: index}
       // handle exits
+      //TODO: handleTransition
       this.handleExit(prevState.activeStepIndex,index);
       if((this.state.isNextDisabled || this.state.isBackDisabled)){
         newState.activeStepIndex = prevState.activeStepIndex;

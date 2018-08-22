@@ -145,6 +145,22 @@ class VolumeRow extends Component {
     }
   }
 
+  componentWillReceiveProps = (nextProps) =>{
+    if(JSON.stringify(nextProps)!==JSON.stringify(this.props)){
+      this.setState((prevState)=>{
+        let newState = {}
+        newState.values = prevState.values;
+        for(let key in newState.values){
+          newState.values[key].value = nextProps.volume[key]
+          newState.values[key].validation = this.validators[key](newState.values[key].value);
+        }
+      });
+    }
+    else{
+      console.debug("VS.VR.nextProps same as oldProps");
+    }
+  }
+
   getVolumeValidation = (prevState) => {
     for (let key in prevState.values){
       if (!prevState.values[key]["validation"]){
@@ -157,16 +173,25 @@ class VolumeRow extends Component {
     //console.debug("onChangeVolumeRow",key,value)
     this.setState((prevState)=>{
       let values = prevState.values;
-      let input = values[key];
-      input.value = value;
-      input.validation = this.validators[key](input.value);
+      values[key].value = value;
+      values[key].validation = this.validators[key](values[key].value);
+      if (key == "name"){
+        values["brickDir"].value = `/gluster_bricks/${value}/${value}`;
+        values["brickDir"].validation = this.validators["brickDir"](values["brickDir"].value);
+        this.props.onVolumeChangedCallback({
+            updateKey: "brickDir",
+            volumeValidation: this.getVolumeValidation(prevState),
+            value: values["brickDir"].value
+          });
+
+      }
       this.props.onVolumeChangedCallback({
           updateKey: key,
           volumeValidation: this.getVolumeValidation(prevState),
-          value: input.value
+          value: values[key].value
         });
 
-      return {[key]: input};
+      return {values: values};
     });
   }
 
@@ -174,11 +199,10 @@ class VolumeRow extends Component {
     //console.debug("onBlurVolumeRow")
     this.setState((prevState)=>{
       let values = prevState.values;
-      let input = values[key];
-      input.value = value;
-      input.validation = this.validators[key](input.value);
-      input.validationState = input.validation ? null : 'error';
-      return { [key]: input };
+      values[key].value = value;
+      values[key].validation = this.validators[key](values[key].value);
+      values[key].validationState = values[key].validation ? null : 'error';
+      return { values: values };
     });
   }
   //Normal means from-event
@@ -196,7 +220,7 @@ class VolumeRow extends Component {
   }
 
   render(){
-    //console.debug("volumeRowValues:",this.state.values)
+    console.debug("VS.VR.state:",this.state);
     return (
       <Grid fluid>
           <Grid.Row>

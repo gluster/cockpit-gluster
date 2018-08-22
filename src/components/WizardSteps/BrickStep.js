@@ -38,19 +38,20 @@ class BrickStep extends Component{
     }
 
     //for generating bricks from volumes
-    this.getDefaultValue = {
-      volName: (volume) => {return volume.name},
-      device: (volume) => "/dev/sdb",
-      size: (volume) =>  100,
-      thinPool: (volume) => true,
-      mountPoint: (volume) => {
-        let mountPointSplit = volume.brickDir.split('/');
-        mountPointSplit.pop();
-        let mountPoint = mountPointSplit.join('/')
-        return mountPoint
-      },
-      vdo: (volume) => false
-    }
+    // this.getDefaultValue = {
+    //   volName: (volume) => {return volume.name},
+    //   device: (volume) => "/dev/sdb",
+    //   size: (volume) =>  100,
+    //   thinPool: (volume) => true,
+    //   mountPoint: (volume) => {
+    //     let mountPointSplit = volume.brickDir.split('/');
+    //     mountPointSplit.pop();
+    //     let mountPoint = mountPointSplit.join('/')
+    //     return mountPoint
+    //   },
+    //   vdo: (volume) => false,
+    //   vdoSize: (volume) => 200
+    // }
 
 
     this.raidOptions = [
@@ -398,7 +399,8 @@ class BrickRow extends Component {
           size: {validation:false,validationState:null},
           thinPool:{validation:false,validationState:null},
           mountPoint:{validation:false,validationState:null},
-          vdo: {validation:false,validationState:null}
+          vdo: {validation:false,validationState:null},
+          vdoSize: {validation:false,validationState:null}
         }
       }
 
@@ -456,7 +458,7 @@ class BrickRow extends Component {
     render(){
     let brick = this.props.brick;
    //console.debug("BR.render brick",brick)
-    const gridValues=[2,2,2,1,2,3];
+    const gridValues=[2,2,1,1,2,2,1];
     return(
       <React.Fragment>
         {this.props.index == 0 && <Row className="brick-row brick-title-row">
@@ -478,6 +480,9 @@ class BrickRow extends Component {
           <Col sm={gridValues[5]} className="brick-col wizard-checkbox vdo" >
                 <ControlLabel>Dedupe & Compression</ControlLabel>
           </Col>
+          {brick["vdo"] && <Col sm={gridValues[6]} className="brick-col" >
+                <ControlLabel>Virtual Size</ControlLabel>
+          </Col>}
         </Row>}
         <Row className="brick-entry-row">
           <Col sm={gridValues[0]} className="brick-col" >
@@ -567,6 +572,22 @@ class BrickRow extends Component {
               </FormGroup>
             </Form>
           </Col>
+          {brick["vdo"] && <Col sm={gridValues[6]} className="brick-col" >
+            <Form>
+              <FormGroup className="brick-form-group"  validationState={this.state.validation["vdoSize"].validationState}>
+                <FormControl
+                  type="number"
+                  value={brick["vdoSize"]}
+                  onChange={(event)=>{
+                    this.onChange(brick, "vdoSize", event.target.value)
+                  }}
+                  onBlur={(event)=>{
+                    this.onBlur(brick, "vdoSize",event.target.value)
+                  }}
+                />
+              </FormGroup>
+            </Form>
+          </Col>}
         </Row>
     </React.Fragment>
     );
