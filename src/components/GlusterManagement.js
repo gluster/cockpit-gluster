@@ -10,8 +10,8 @@ class GlusterManagement extends Component {
       peers: null,
       volumeBricks: null,
       volumes: null,
-      expandClusterStarted: true,
-      showExpandCluster: true
+      expandClusterStarted: false,
+      showExpandCluster: false
     };
     this.gluster_api = cockpit.http("24007");
     this.expandClusterWizard = React.createRef();
