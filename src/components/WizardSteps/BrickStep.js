@@ -96,6 +96,14 @@ class BrickStep extends Component{
       newBricks = oldBricks.slice();
     }
     // console.debug("BS.handleBrickChange",hostIndex,index,brickKey, brickValue, JSON.stringify(newBricks))
+    if (brickKey == "vdo" || brickKey == "vdoSize"){
+      let device = newBricks[hostIndex][index].device;
+      for(let brickIndex = 0; brickIndex < newBricks[hostIndex].length; brickIndex++){
+        if(newBricks[hostIndex][brickIndex].device == device){
+          newBricks[hostIndex][brickIndex][brickKey] = brickValue
+        }
+      }
+    }
     newBricks[hostIndex][index][brickKey] = brickValue;
     this.props.callback({bricks: newBricks});
   }
@@ -480,9 +488,9 @@ class BrickRow extends Component {
           <Col sm={gridValues[5]} className="brick-col wizard-checkbox vdo" >
                 <ControlLabel>Dedupe & Compression</ControlLabel>
           </Col>
-          {brick["vdo"] && <Col sm={gridValues[6]} className="brick-col" >
+          <Col sm={gridValues[6]} className="brick-col" >
                 <ControlLabel>Virtual Size</ControlLabel>
-          </Col>}
+          </Col>
         </Row>}
         <Row className="brick-entry-row">
           <Col sm={gridValues[0]} className="brick-col" >
