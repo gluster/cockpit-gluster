@@ -18,7 +18,8 @@ tarify :
 	rm -rf $(BUILDIR)
 	mkdir -p $(BUILDIR)/$(distdir)
 	rsync -r dist $(BUILDIR)/$(distdir)/
-	rsync -r LICENSE $(BUILDIR)/$(distdir)/
+	rsync -r LICENSE $(BUILDIR)/$(distdir)/dist/
+	rsync -r ansible $(BUILDIR)/$(distdir)/
 	rsync -r cockpit-gluster.spec $(BUILDIR)/$(distdir)/
 
 	tar -C $(BUILDIR) -cvzf $(TMPREPOS)/SOURCES/$(tarname) $(distdir)

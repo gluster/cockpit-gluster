@@ -13,15 +13,27 @@ import {
 import { notEmpty } from '../common/validators'
 import Dropdown from '../common/Dropdown'
 import yaml from 'js-yaml';
+const INVENTORY = `/etc/ansible/hc_wizard_inventory.yml`;
 
 class ReviewStep extends Component {
   constructor(props){
     super(props)
     this.state = {
       isEditing: false,
-      inventory: this.generateInventory(this.props.glusterModel)
+      inventory: this.generateInventory(this.props.glusterModel),
+      deploymentOutput: ""
     }
+    this.writeFile(this.state.inventory, INVENTORY);
+    this.props.setStreamer(this.streamer);
   }
+
+  streamer = (data) => {
+    this.setState((prevState)=>{
+      return {deploymentOutput: prevState.deploymentOutput+data}
+    });
+  }
+
+
 
   handleEmpty = (po) => {
     return JSON.stringify(po) == '{}' ? "" : po;
@@ -115,9 +127,48 @@ class ReviewStep extends Component {
   handleEdit = (event) => {
     this.setState({isEditing:true});
   }
-  handleSave = (event) => {
-    this.setState({isEditing:false});
+  handleReload = () => {
+    this.readInventory(INVENTORY).then((content,tag)=>{
+      this.setState({inventory:content})
+    })
   }
+
+  readInventory = (path) => {
+    let file = cockpit.file(path)
+    return file.read().done((content,tag)=>{
+      if(content== null){
+        console.warn(`File: ${path} does not exist`)
+      }
+    }).fail((error)=>{
+
+      console.warn(`File: ${path} not written`,error)
+    }).always((tag) => {
+      file.close()
+    });
+  }
+
+
+
+  writeFile = (inventory, path) =>{
+    let file = cockpit.file(path)
+    return file.replace(inventory).done((content,tag)=>{
+      if(content== null){
+        console.warn(`File: ${path} does not exist`)
+      }
+    }).fail((error)=>{
+
+      console.warn(`File: ${path} not written`,error)
+    }).always((tag) => {
+      file.close()
+    });
+  }
+  handleSave = () => {
+    this.setState((prevState)=>{
+      this.writeFile(prevState.inventory, INVENTORY);
+      return {isEditing:false}
+    });
+  }
+
   handleTextChange = (event) => {
     this.setState({inventory: event.target.value});
   }
@@ -132,31 +183,35 @@ class ReviewStep extends Component {
         <span>
             Generated ansible inventory : {this.props.configFilePath}
         </span>
+        {this.props.isDeploymentStarted && <span>[Running Play]</span>}
         <div className="pull-right">
-          {this.state.isEditing &&
+          {this.state.isEditing && !this.props.isDeploymentStarted &&
             <button className="btn btn-default"
-              onClick={this.handleSave}>
+              onClick={()=>this.handleSave()}>
               <span className="pficon pficon-save">&nbsp;</span>
               Save
             </button>
           }
-          {!this.state.isEditing &&
+          {!this.state.isEditing && !this.props.isDeploymentStarted &&
             <button className="btn btn-default"
                 onClick={this.handleEdit}>
                 <span className="pficon pficon-edit">&nbsp;</span>
                 Edit
             </button>
           }
-            <button className="btn btn-default"
+          {!this.props.isDeploymentStarted && <button className="btn btn-default"
               onClick={this.handleReload}>
               <span className="fa fa-refresh">&nbsp;</span>
               Reload
-            </button>
+            </button>}
         </div>
     </div>
-    <textarea className="wizard-preview"
+    {!this.props.isDeploymentStarted && <textarea className="wizard-preview"
         value={this.state.inventory} onChange={this.handleTextChange} readOnly={!this.state.isEditing}>
-    </textarea>
+    </textarea>}
+    {this.props.isDeploymentStarted && <textarea className="wizard-preview"
+        value={this.state.deploymentOutput}  readOnly={true}>
+    </textarea>}
 </div>
 
           </Col>

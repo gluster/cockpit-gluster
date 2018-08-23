@@ -46,7 +46,10 @@ class ExpandClusterWizard extends Component {
       isBackDisabled: false,
       isNextDisabled: false,
       showValidation: false,
-      activeStepIndex: 0
+      activeStepIndex: 0,
+      isDeploymentStarted: false,
+      deploymentPromise: null
+
     }
     this.title="Expand Cluster";
     this.defaultCacheMode = {
@@ -89,6 +92,11 @@ class ExpandClusterWizard extends Component {
       return { show: !prevState.show }
     });
   }
+  show = () => {
+    this.setState((prevState)=>{
+      return { show: true }
+    });
+  }
   handleStepChange = (index) => {
     this.setState((prevState)=>{
       let newState = { activeStepIndex: index}
@@ -102,8 +110,29 @@ class ExpandClusterWizard extends Component {
       return newState;
     });
   }
+  setStreamer = (streamer) => {
+    this.setState({deploymentStreamer: streamer});
+  }
   finish = (event) => {
-    console.debug("Final");
+    this.setState((prevState)=>{
+      let process = cockpit.spawn(
+        ["/usr/bin/ansible-playbook",
+         "/etc/ansible/hc_wizard.yml",
+         "-i /etc/ansible/hc_wizard_inventory.yml"
+         ]
+       );
+      if(prevState.deploymentStreamer !== undefined){
+        process.done((data)=>{console.log(data)}).fail((data)=>{console.log(data)}).stream(prevState.deploymentStreamer);
+      }
+      return { isDeploymentStarted: true, deploymentPromise: process }
+    })
+  }
+  onCancel = (e) =>{
+    this.setState((prevState)=>{
+      this.state.deploymentPromise.close();
+      return { isDeploymentStarted: true, deploymentPromise: process }
+    })
+    this.props.onCancel();
   }
 
   onBack = (e) => {
@@ -214,7 +243,7 @@ class ExpandClusterWizard extends Component {
         show={this.state.show}
         onNext={this.onNext}
         onBack={this.onBack}
-        onCancel={this.props.onCancel}
+        onCancel={this.onCancel}
         onFinal={this.finish}
         onClose={this.close}
         handleStepChange={this.handleStepChange}
@@ -242,6 +271,9 @@ class ExpandClusterWizard extends Component {
       <ReviewStep
         stepName="Preview"
         glusterModel={this.state.glusterModel}
+        isDeploymentStarted={this.state.isDeploymentStarted}
+        deploymentPromise={this.state.deploymentPromise}
+        setStreamer={this.setStreamer}
       />
 
       </GeneralWizard>

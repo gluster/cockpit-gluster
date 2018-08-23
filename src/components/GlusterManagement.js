@@ -124,7 +124,7 @@ class GlusterManagement extends Component {
     this.setState((prevState)=>{
       if (prevState.expandClusterStarted){
         if(this.expandClusterWizard.current){
-          this.expandClusterWizard.current.toggle();
+          this.expandClusterWizard.current.show();
         }
         return null
       }
