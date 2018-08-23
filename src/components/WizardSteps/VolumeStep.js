@@ -236,7 +236,7 @@ class VolumeRow extends Component {
               </Form>
             </Grid.Col>
             <Grid.Col sm={2}>
-                <Dropdown typeOptions={this.props.typeOptions} onSelect={(value,index)=>{this.onChange("type",value)}}/>
+                <Dropdown value={this.state.values["type"].value} typeOptions={this.props.typeOptions} onSelect={(value,index)=>{this.onChange("type",value)}}/>
             </Grid.Col>
             <Grid.Col sm={1}>
               <Form>

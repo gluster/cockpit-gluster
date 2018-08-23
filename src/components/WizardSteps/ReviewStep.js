@@ -52,17 +52,44 @@ class ReviewStep extends Component {
       let hostBricks = bricks[hostIndex]
       hostVars.gluster_infra_lv_thicklvname = `gluster_lv_${hostBricks[0].volName}`
       hostVars.gluster_infra_lv_thicklvsize = `gluster_lv_${hostBricks[0].size}`
-
-      hostVars.gluster_infra_pvs = this.uniqueStringsArray(hostBricks.map((brick)=>brick.device));
+      let hostPVs = []
+      hostVars.gluster_infra_vdo = null
+      for (let brick of hostBricks){
+        let brickPV = brick.device;
+        console.debug("RS.generateInventory.brick vdo vdoSize", brick.vdo,brick.vdoSize)
+        if(brick.vdo == true && brick.vdoSize){
+          let deviceName = brick.device.split("/").pop();
+          let vdoName = `vdo_${deviceName}`
+          brickPV = `/dev/${vdoName}`;
+          if(hostVars.gluster_infra_vdo == undefined){
+            hostVars.gluster_infra_vdo = [];
+            hostVars.gluster_infra_vdo_blockmapcachesize = "128M";
+            hostVars.gluster_infra_vdo_slabsize = "32G";
+            hostVars.gluster_infra_vdo_readcachesize = "20M";
+            hostVars.gluster_infra_vdo_readcache = "enabled";
+            hostVars.gluster_infra_vdo_writepolicy = "auto";
+            hostVars.gluster_infra_vdo_emulate512 = "on";
+          }
+          if(hostPVs.indexOf(brickPV) == -1){
+            hostVars.gluster_infra_vdo.push({
+              name: vdoName,
+              device: brick.device,
+              logicalsize: `${brick.vdoSize}G`
+            });
+          }
+        }
+        hostPVs.push(brickPV);
+      }
+      hostVars.gluster_infra_pvs = this.uniqueStringsArray(hostPVs);
       hostVars.gluster_infra_lv_logicalvols = hostBricks
-      .slice(1,hostBricks.length)
-      .map((brick)=>{
-        return {
-          lvname: `gluster_lv_${brick.volName}`,
-          lvsize: `${brick.size}G`
-        };
-      });
-      hostVars.gluster_infra_mount_devices = hostBricks.map((brick)=>{
+        .slice(1,hostBricks.length)
+        .map((brick)=>{
+          return {
+            lvname: `gluster_lv_${brick.volName}`,
+            lvsize: `${brick.size}G`
+          };
+        });
+        hostVars.gluster_infra_mount_devices = hostBricks.map((brick)=>{
         return {
           path: brick.mountPoint,
           lv: `gluster_lv_${brick.volName}`

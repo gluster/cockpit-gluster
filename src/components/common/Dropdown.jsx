@@ -5,21 +5,26 @@ class Dropdown extends Component{
     super(props)
     this.state ={
       activeItem : 0,
+      changed:false
     }
   }
 
   onClick = (value,index) => {
     this.setState((prevState)=>{
-      return {activeItem:index}
+      return {activeItem:index, changed:true}
     });
     this.props.onSelect(value,index);
   }
   render(){
     let options = this.props.typeOptions;
     let menuItems = [];
+    let selectedName = options[this.state.activeItem].name;
 
     for(let index = 0; index < options.length; index++){
       let option = options[index]
+      if (option.value == this.props.value){
+        selectedName = option.name
+      }
       menuItems.push(
         <li value={option.value} key={option.value} onClick={(event) => {this.onClick(option.value,index)}}>
             <a>
@@ -33,7 +38,7 @@ class Dropdown extends Component{
         <div className="btn-group bootstrap-select dropdown form-control">
           <button className="btn btn-default dropdown-toggle" type="button"
             data-toggle="dropdown" aria-expanded="false">
-            <span className="pull-left">{options[this.state.activeItem]["name"]}</span>
+            <span className="pull-left">{selectedName}</span>
             <span className="caret" />
           </button>
           <ul className="dropdown-menu">{menuItems}</ul>

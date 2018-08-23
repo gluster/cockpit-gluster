@@ -95,16 +95,24 @@ class BrickStep extends Component{
     if (oldBricks !== undefined){
       newBricks = oldBricks.slice();
     }
-    // console.debug("BS.handleBrickChange",hostIndex,index,brickKey, brickValue, JSON.stringify(newBricks))
-    if (brickKey == "vdo" || brickKey == "vdoSize"){
-      let device = newBricks[hostIndex][index].device;
-      for(let brickIndex = 0; brickIndex < newBricks[hostIndex].length; brickIndex++){
-        if(newBricks[hostIndex][brickIndex].device == device){
-          newBricks[hostIndex][brickIndex][brickKey] = brickValue
+    let lastHostIndex = hostIndex;
+    if (hostIndex == 0){
+      lastHostIndex = newBricks.length - 1;
+    }
+
+
+    for (let otherHostIndex = hostIndex; otherHostIndex <= lastHostIndex;otherHostIndex++){
+      if (brickKey == "vdo" || brickKey == "vdoSize"){
+        let device = newBricks[otherHostIndex][index].device;
+        for(let brickIndex = 0; brickIndex < newBricks[otherHostIndex].length; brickIndex++){
+          if(newBricks[otherHostIndex][brickIndex].device == device){
+            newBricks[otherHostIndex][brickIndex][brickKey] = brickValue
+          }
         }
       }
+      newBricks[otherHostIndex][index][brickKey] = brickValue;
     }
-    newBricks[hostIndex][index][brickKey] = brickValue;
+    // console.debug("BS.handleBrickChange",hostIndex,index,brickKey, brickValue, JSON.stringify(newBricks))
     this.props.callback({bricks: newBricks});
   }
 
@@ -119,6 +127,7 @@ class BrickStep extends Component{
       newRaidConfig[key] = value;
       newState.raidValidation = prevState.raidValidation;
       newState.raidValidation[key].validation = validation;
+      console.debug("BS.onChangeRaidConfig: key, value", key, value)
       this.props.callback({raidConfig: newRaidConfig});
       return newState
     });
@@ -236,8 +245,9 @@ class BrickStep extends Component{
               <Form>
                 <FormGroup>
                   <Dropdown
+                    value={this.props.glusterModel.raidConfig["raid_type"]}
                     typeOptions={this.raidOptions}
-                    onSelect={(index, value) => {this.onChangeRaidConfig("raid_type", value)}}
+                    onSelect={(value, index) => {this.onChangeRaidConfig("raid_type", value)}}
                   />
                 </FormGroup>
               </Form>
