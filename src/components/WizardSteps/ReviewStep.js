@@ -65,7 +65,7 @@ class ReviewStep extends Component {
       hostVars.gluster_infra_lv_thicklvname = `gluster_lv_${hostBricks[0].volName}`
       hostVars.gluster_infra_lv_thicklvsize = `gluster_lv_${hostBricks[0].size}`
       let hostPVs = []
-      hostVars.gluster_infra_vdo = null
+      // hostVars.gluster_infra_vdo = null
       for (let brick of hostBricks){
         let brickPV = brick.device;
         console.debug("RS.generateInventory.brick vdo vdoSize", brick.vdo,brick.vdoSize)
@@ -93,6 +93,7 @@ class ReviewStep extends Component {
         hostPVs.push(brickPV);
       }
       hostVars.gluster_infra_pvs = this.uniqueStringsArray(hostPVs);
+      //HACK while looking for relevant gluster-ansible funcitonality
       hostVars.gluster_infra_lv_logicalvols = hostBricks
         .slice(1,hostBricks.length)
         .map((brick)=>{
@@ -106,6 +107,14 @@ class ReviewStep extends Component {
           path: brick.mountPoint,
           lv: `gluster_lv_${brick.volName}`
         }
+      });
+      hostVars.gluster_infra_thick_lvs = hostBricks
+      .slice(0,1)
+      .map((brick)=>{
+        return {
+          name: `gluster_lv_${brick.volName}`,
+          size: `${brick.size}G`
+        };
       });
       groups.hc_nodes.hosts[hosts[hostIndex]] = hostVars;
     }
