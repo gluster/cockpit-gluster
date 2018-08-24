@@ -15,20 +15,7 @@ class ExpandClusterWizard extends Component {
     this.state = {
       glusterModel: {
         hosts:["","",""],
-        volumes: [
-          {
-            name: "engine",
-            type: "replicate",
-            isArbiter: false,
-            brickDir: "/gluster_bricks/engine/engine"
-          },
-          {
-            name: "data",
-            type: "replicate",
-            isArbiter: false,
-            brickDir: "/gluster_bricks/data/data"
-          }
-        ],
+        volumes: [ ],
         bricks: [],
         cacheConfig: [
 
@@ -51,7 +38,29 @@ class ExpandClusterWizard extends Component {
       deploymentPromise: null
 
     }
-    this.title="Expand Cluster";
+    if (this.props.type == "createVolume"){
+      this.state.glusterModel.hosts = this.props.peers.slice(0,3).map((host)=>host.name);
+      this.state.glusterModel.volumes = [{
+                  name: "",
+                  type: "replicate",
+                  isArbiter: false,
+                  brickDir: ""
+                }]
+    }
+    else{
+      this.state.glusterModel.volumes = [{
+                  name: "engine",
+                  type: "replicate",
+                  isArbiter: false,
+                  brickDir: "/gluster_bricks/engine/engine"
+                },
+                {
+                  name: "data",
+                  type: "replicate",
+                  isArbiter: false,
+                  brickDir: "/gluster_bricks/data/data"
+                }];
+    }
     this.defaultCacheMode = {
           cache: false,
           ssd: "/dev/sdc",

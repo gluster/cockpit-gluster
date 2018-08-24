@@ -11,17 +11,19 @@ class GlusterManagement extends Component {
       volumeBricks: null,
       volumes: null,
       expandClusterStarted: false,
-      showExpandCluster: false
+      showExpandCluster: false,
+      createVolumeStarted: false,
+      showCreateVolume: false
     };
     this.gluster_api = cockpit.http("24007");
     this.expandClusterWizard = React.createRef();
+    this.createVolumeWizard = React.createRef();
     //Binding "this" of the function to "this" of the component.
     //However, when nesting calls, it seems best to use "let that = this;"
     // and use  "that" in the inner nested calls.
     this.getPeers = this.getPeers.bind(this);
     this.getVolumes = this.getVolumes.bind(this);
     this.handleVolumeRowClick= this.handleVolumeRowClick.bind(this);
-    this.handleExpandCluster= this.handleExpandCluster.bind(this);
   }
 
   componentDidMount(){
@@ -29,6 +31,9 @@ class GlusterManagement extends Component {
     this.getVolumes();
   }
   onCancelExpandClusterWizard = (event) =>{
+    this.setState({expandClusterStarted: false});
+  }
+  onCancelCreateVolumeWizard = (event) =>{
     this.setState({expandClusterStarted: false});
   }
 
@@ -120,7 +125,7 @@ class GlusterManagement extends Component {
     });
   }
 
-  handleExpandCluster(event){
+  handleExpandCluster = (event) => {
     this.setState((prevState)=>{
       if (prevState.expandClusterStarted){
         if(this.expandClusterWizard.current){
@@ -129,6 +134,17 @@ class GlusterManagement extends Component {
         return null
       }
       return { expandClusterStarted: true}
+    })
+  }
+  handleCreateVolume = (event) =>{
+    this.setState((prevState)=>{
+      if (prevState.createVolumeStarted){
+        if(this.createVolumeWizard.current){
+          this.createVolumeWizard.current.show();
+        }
+        return null
+      }
+      return { createVolumeStarted: true}
     })
   }
 
@@ -143,7 +159,8 @@ class GlusterManagement extends Component {
                 this.state.peers !== null &&
                 <HostsTable peers={this.state.peers}
                   handleRefresh={this.getPeers}
-                handleExpandCluster={this.handleExpandCluster}/>
+                handleExpandCluster={this.handleExpandCluster}
+              />
               }
               {
                 this.state.peers == null &&
@@ -160,7 +177,9 @@ class GlusterManagement extends Component {
                   selectedVolumes={this.state.selectedVolumes}
                   volumeBricks={this.state.volumeBricks}
                   handleRefresh={this.getVolumes}
-                  handleVolumeRowClick={this.handleVolumeRowClick}/>
+                  handleVolumeRowClick={this.handleVolumeRowClick}
+                  handleCreateVolume={this.handleCreateVolume}
+                />
               }
               {
                 this.state.volumes == null &&
@@ -169,7 +188,17 @@ class GlusterManagement extends Component {
               }
             </div>
           </div>
-          {this.state.expandClusterStarted && <ExpandClusterWizard onCancel={this.onCancelExpandClusterWizard} ref={this.expandClusterWizard}/>}
+          {this.state.expandClusterStarted && <ExpandClusterWizard
+            onCancel={this.onCancelExpandClusterWizard}
+            ref={this.expandClusterWizard}
+            type="expandCluster"
+          />}
+          {this.state.createVolumeStarted && <ExpandClusterWizard
+            onCancel={this.onCancelCreateVolumeWizard}
+            ref={this.createVolumeWizard}
+            peers={this.state.peers}
+            type="createVolume"
+          />}
         </div>
       </div>
     )
@@ -342,7 +371,8 @@ class VolumeTable extends Component{
           </button>
           <span className="pull-right">
             <button className="btn btn-default action-btn"
-              onClick={()=>{}}>
+              onClick={this.props.handleCreateVolume}
+            >
               Create Volume
             </button>
           </span>
