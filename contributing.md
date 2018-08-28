@@ -12,4 +12,4 @@ Please raise an issue if there is a problem with one of these:
 ## Variable naming
 - lowerCamelCase for variables, properties, etc.
 - UpperCamelCase for constructors.
-- CAPITAL_CASE_WITH_UNDERSCORES 
+- CAPITAL_CASE_WITH_UNDERSCORES for constants.
