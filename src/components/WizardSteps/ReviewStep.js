@@ -53,7 +53,9 @@ class ReviewStep extends Component {
     let { hosts, volumes, bricks, raidConfig, cacheConfig } = glusterModel;
     groups.hc_nodes = {};
     groups.hc_nodes.hosts = {};
+    groups.local = { hosts: {localhost: null}};
     let groupVars = {}
+    let localVars = {}
     groupVars.gluster_infra_stripe_unit_size = raidConfig.stripe_size;
     groupVars.gluster_infra_disktype = raidConfig.raid_type;
     groupVars.gluster_infra_diskcount = raidConfig.disk_count;
@@ -119,16 +121,18 @@ class ReviewStep extends Component {
       groups.hc_nodes.hosts[hosts[hostIndex]] = hostVars;
     }
 
-    groupVars.gluster_features_hci_volumes = [];
+    localVars.gluster_features_hci_volumes = [];
     for(let volumeIndex = 0; volumeIndex < volumes.length;volumeIndex++){
       let volume = volumes[volumeIndex];
-      groupVars.gluster_features_hci_volumes.push({
+      localVars.gluster_features_hci_volumes.push({
         volname: volume.name,
         brick: volume.brickDir,
-        arbiter: volume.isArbiter
+        arbiter: volume.isArbiter,
+        master: "localhost"
       });
     }
     groups.hc_nodes.vars = groupVars;
+    groups.local.vars = localVars;
 
     return yaml.safeDump(groups)
 

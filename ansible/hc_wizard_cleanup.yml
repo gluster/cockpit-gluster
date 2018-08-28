@@ -1,0 +1,45 @@
+---
+- hosts: local
+  tasks:
+    - name: Delete the volumes
+      shell: glustercli volume stop {{ item.volname }};glustercli volume delete {{ item.volname }}
+      register: shell_output
+      changed_when: shell_output.rc == 0
+      failed_when: False
+      with_items:
+        - "{{ gluster_features_hci_volumes }}"
+      tags:
+        - delete_volumes
+    - name: Remove the peers
+      shell: glustercli peer remove $(glustercli peer list|grep {{ item }}:24008|awk '{ print $2; }')
+      register: shell_output
+      changed_when: shell_output.rc == 0
+      failed_when: False
+      with_inventory_hostnames:
+        - hc_nodes
+      tags:
+        - remove_peers
+- name: Remove brick setup
+  hosts: hc_nodes
+  tasks:
+    - name: Unmount and delete bricks
+      shell: umount {{ item.path }};e=$?; rm -rf  {{ item.path }};exit $e
+      register: shell_output
+      changed_when: shell_output.rc == 0
+      failed_when: False
+      with_items:
+        - "{{ gluster_infra_mount_devices }}"
+    - name: Wipe filesystem from LVs
+      shell: wipefs -a /dev/glusterfs_vg/gluster_lv_{{ item.volname }}
+      register: shell_output
+      changed_when: shell_output.rc == 0
+      failed_when: False
+      with_items:
+        - "{{ hostvars[groups['local'][0]].gluster_features_hci_volumes }}"
+    - name: Remove VG
+      shell: vgremove glusterfs_vg -f
+      register: shell_output
+      changed_when: shell_output.rc == 0
+      failed_when: False
+  tags:
+    - cleanup_bricks
