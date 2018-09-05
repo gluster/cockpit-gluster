@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {Grid, Form, FormGroup, FormControl, ControlLabel, HelpBlock, Checkbox, Row, Col} from 'patternfly-react'
-import { notEmpty } from '../common/validators'
+import { notEmpty } from '../../lib/validators'
 import Dropdown from '../common/Dropdown'
 
 class BrickStep extends Component{
@@ -195,10 +195,6 @@ class BrickStep extends Component{
   render(){
    //console.debug("BS.props.volumes:",this.props.glusterModel.volumes);
    console.debug("BS.props.bricks:",this.props.glusterModel.bricks);
-   // console.debug("BS.props.cacheConfig:",this.props.glusterModel.cacheConfig);
-    // let hosts = this.props.glusterModel.hosts;
-    // let volumes = this.props.glusterModel.volumes;
-    // let bricks = this.props.glusterModel.bricks;
 
     let { hosts, volumes, bricks, cacheConfig } = this.props.glusterModel;
     let cacheClassNames = cacheConfig[this.state.hostIndex].cache ? "" : "hidden";

@@ -34,7 +34,7 @@ class GlusterManagement extends Component {
     this.setState({expandClusterStarted: false});
   }
   onCancelCreateVolumeWizard = (event) =>{
-    this.setState({expandClusterStarted: false});
+    this.setState({createVolumeStarted: false});
   }
 
   generateAuthHeader(){
@@ -131,7 +131,7 @@ class GlusterManagement extends Component {
         if(this.expandClusterWizard.current){
           this.expandClusterWizard.current.show();
         }
-        return null
+        return { expandClusterStarted: false}
       }
       return { expandClusterStarted: true}
     })
@@ -142,7 +142,7 @@ class GlusterManagement extends Component {
         if(this.createVolumeWizard.current){
           this.createVolumeWizard.current.show();
         }
-        return null
+        return { createVolumeStarted: false}
       }
       return { createVolumeStarted: true}
     })

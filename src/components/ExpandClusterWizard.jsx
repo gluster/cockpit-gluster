@@ -6,6 +6,8 @@ import VolumeStep from './WizardSteps/VolumeStep'
 import BrickStep from './WizardSteps/BrickStep'
 import ReviewStep from './WizardSteps/ReviewStep'
 
+import { defaultGlusterModel, runGlusterAnsible, INVENTORY } from '../lib/gluster-ansible'
+
 
 
 class ExpandClusterWizard extends Component {
@@ -13,20 +15,7 @@ class ExpandClusterWizard extends Component {
     super(props)
     //TODO: push glusterModel out to seperate file and handle different defaults
     this.state = {
-      glusterModel: {
-        hosts:["","",""],
-        volumes: [ ],
-        bricks: [],
-        cacheConfig: [
-
-        ],
-        raidConfig:{
-          hostIndex: 0,
-          raid_type:"JBOD",
-          stripe_size:256,
-          disk_count:12
-        }
-      },
+      glusterModel: JSON.parse(JSON.stringify(defaultGlusterModel)),
       volumeStepValid:true,
       show: true,
       loading: false,
@@ -35,10 +24,12 @@ class ExpandClusterWizard extends Component {
       showValidation: false,
       activeStepIndex: 0,
       isDeploymentStarted: false,
-      deploymentPromise: null
+      deploymentPromise: null,
+      deploymentStream: "",
 
     }
     if (this.props.type == "createVolume"){
+      console.debug("EC.createVolume gM.hosts",this.state.glusterModel.hosts);
       this.state.glusterModel.hosts = this.props.peers.slice(0,3).map((host)=>host.name);
       this.state.glusterModel.volumes = [{
                   name: "",
@@ -48,6 +39,7 @@ class ExpandClusterWizard extends Component {
                 }]
     }
     else{
+      console.debug("EC.expandCluster gM.hosts",this.state.glusterModel.hosts);
       this.state.glusterModel.volumes = [{
                   name: "engine",
                   type: "replicate",
@@ -119,21 +111,33 @@ class ExpandClusterWizard extends Component {
       return newState;
     });
   }
-  setStreamer = (streamer) => {
-    this.setState({deploymentStreamer: streamer});
+  deploymentStreamer = (data) => {
+    console.debug("EC.dS.stream", data)
+    this.setState((prevState)=>{
+      return { deploymentStream: prevState.deploymentStream+data}
+    });
+  }
+  deploymentDone = (data,msg) => {
+    console.debug("EC.dS.done", data,msg)
+    this.setState((prevState)=>{
+      return { deploymentStream: prevState.deploymentStream+data}
+    });
+  };
+  deploymentFail = (ex,data) => {
+    console.debug("EC.dS.fail", data,ex)
+    this.setState((prevState)=>{
+      return { deploymentStream: prevState.deploymentStream+data}
+    });
   }
   finish = (event) => {
     this.setState((prevState)=>{
-      let process = cockpit.spawn(
-        ["/usr/bin/ansible-playbook",
-         "/etc/ansible/hc_wizard.yml",
-         "-i /etc/ansible/hc_wizard_inventory.yml"
-         ]
-       );
-      if(prevState.deploymentStreamer !== undefined){
-        process.done((data)=>{console.log(data)}).fail((data)=>{console.log(data)}).stream(prevState.deploymentStreamer);
-      }
-      return { isDeploymentStarted: true, deploymentPromise: process }
+      let depPromise = runGlusterAnsible(
+        INVENTORY,
+        this.deploymentStreamer,
+        this.deploymentDone,
+        this.deploymentFail
+      );
+      return { isDeploymentStarted: true, deploymentPromise: depPromise }
     })
   }
   onCancel = (e) =>{
@@ -282,7 +286,7 @@ class ExpandClusterWizard extends Component {
         glusterModel={this.state.glusterModel}
         isDeploymentStarted={this.state.isDeploymentStarted}
         deploymentPromise={this.state.deploymentPromise}
-        setStreamer={this.setStreamer}
+        deploymentStream={this.state.deploymentStream}
       />
 
       </GeneralWizard>

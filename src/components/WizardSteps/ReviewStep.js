@@ -10,7 +10,7 @@ import {
   HelpBlock,
   Checkbox
   } from 'patternfly-react'
-import { notEmpty } from '../common/validators'
+import { notEmpty } from '../../lib/validators'
 import Dropdown from '../common/Dropdown'
 import yaml from 'js-yaml';
 const INVENTORY = `/etc/ansible/hc_wizard_inventory.yml`;
@@ -21,17 +21,10 @@ class ReviewStep extends Component {
     this.state = {
       isEditing: false,
       inventory: this.generateInventory(this.props.glusterModel),
-      deploymentOutput: ""
     }
     this.writeFile(this.state.inventory, INVENTORY);
-    this.props.setStreamer(this.streamer);
   }
 
-  streamer = (data) => {
-    this.setState((prevState)=>{
-      return {deploymentOutput: prevState.deploymentOutput+data}
-    });
-  }
 
 
 
@@ -64,10 +57,7 @@ class ReviewStep extends Component {
     for (let hostIndex = 0; hostIndex < hosts.length;hostIndex++){
       let hostVars = {}
       let hostBricks = bricks[hostIndex]
-      hostVars.gluster_infra_lv_thicklvname = `gluster_lv_${hostBricks[0].volName}`
-      hostVars.gluster_infra_lv_thicklvsize = `gluster_lv_${hostBricks[0].size}`
       let hostPVs = []
-      // hostVars.gluster_infra_vdo = null
       for (let brick of hostBricks){
         let brickPV = brick.device;
         console.debug("RS.generateInventory.brick vdo vdoSize", brick.vdo,brick.vdoSize)
@@ -78,7 +68,7 @@ class ReviewStep extends Component {
           if(hostVars.gluster_infra_vdo == undefined){
             hostVars.gluster_infra_vdo = [];
             hostVars.gluster_infra_vdo_blockmapcachesize = "128M";
-            hostVars.gluster_infra_vdo_slabsize = "32G";
+            hostVars.gluster_infra_vdo_slabsize = (brick.vdoSize <= 1000) ? "2G": "32G";
             hostVars.gluster_infra_vdo_readcachesize = "20M";
             hostVars.gluster_infra_vdo_readcache = "enabled";
             hostVars.gluster_infra_vdo_writepolicy = "auto";
@@ -223,7 +213,7 @@ class ReviewStep extends Component {
         value={this.state.inventory} onChange={this.handleTextChange} readOnly={!this.state.isEditing}>
     </textarea>}
     {this.props.isDeploymentStarted && <textarea className="wizard-preview"
-        value={this.state.deploymentOutput}  readOnly={true}>
+        value={this.props.deploymentStream}  readOnly={true}>
     </textarea>}
 </div>
 
