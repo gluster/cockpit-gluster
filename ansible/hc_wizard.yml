@@ -7,7 +7,6 @@
     gluster_features_hci_packages: []
     gluster_features_hci_cluster: "{{ groups['hc_nodes'] }}"
     gluster_infra_lv_thinpoolname: gluster_thinpool
-
   roles:
     - gluster.infra
   tags:
@@ -17,6 +16,7 @@
   hosts: local
   vars:
     gluster_features_hci_packages: []
+    gluster_features_hci_master: localhost
     gluster_features_hci_cluster: "{{ groups['hc_nodes'] }}"
   roles:
     - gluster.features

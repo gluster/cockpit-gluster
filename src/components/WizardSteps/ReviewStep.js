@@ -121,6 +121,11 @@ class ReviewStep extends Component {
         master: "localhost"
       });
     }
+    const SSH_OPTS = '-o StrictHostKeyChecking=no'
+
+    localVars.ansible_ssh_common_args = SSH_OPTS;
+    groupVars.ansible_ssh_common_args = SSH_OPTS;
+
     groups.hc_nodes.vars = groupVars;
     groups.local.vars = localVars;
 
