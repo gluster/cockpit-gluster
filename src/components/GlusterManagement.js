@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import jwt from 'jsonwebtoken'
 import ExpandClusterWizard from './ExpandClusterWizard'
-import { ObjectModal, ObjectModalButton } from './common/ObjectModal'
+import { ObjectModal, ObjectModalButton, StartModalButton, StopModalButton, DeleteModalButton } from './common/ObjectModal'
 import { InlineAlert } from './common/Alerts'
 
 class GlusterManagement extends Component {
@@ -196,6 +196,7 @@ class GlusterManagement extends Component {
                   handleRefresh={this.getVolumes}
                   handleVolumeRowClick={this.handleVolumeRowClick}
                   handleCreateVolume={this.handleCreateVolume}
+                  gluster_api={this.gluster_api}
                 />
               }
               {
@@ -339,6 +340,7 @@ class VolumeBricksTable extends Component{
 class VolumeTable extends Component{
   constructor(props){
     super(props);
+    this.gluster_api = cockpit.http("24007");
   }
 
   generateTable(){
@@ -355,7 +357,10 @@ class VolumeTable extends Component{
               {/* {volume.volumeBricks == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> } */}
               {volume.state}
             </td>
-            <td><ObjectModalButton modalId={volume.id}/></td>
+            <td><ObjectModalButton modalId={volume.id}/>
+                <StartModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/>
+                <StopModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/>
+                <DeleteModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/></td>
           </tr>
       );
       this.moreInfoModals.push(
@@ -401,7 +406,7 @@ class VolumeTable extends Component{
               <th>Name</th>
               <th>Volume Type</th>
               <th>Status</th>
-              <th>More Info</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
