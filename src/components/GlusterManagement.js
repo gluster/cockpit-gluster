@@ -179,6 +179,7 @@ class GlusterManagement extends Component {
                   handleRefresh={this.getVolumes}
                   handleVolumeRowClick={this.handleVolumeRowClick}
                   handleCreateVolume={this.handleCreateVolume}
+                  gluster_api={this.gluster_api}
                 />
               }
               {
@@ -340,13 +341,13 @@ class VolumeTable extends Component{
               {volume.state}
             </td>
             <td><ObjectModalButton modalId={volume.id}/>
-                <StartModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/>
-                <StopModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/>
-                <DeleteModalButton modalId={volume.id}/></td>
+                <StartModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.props.gluster_api} refresh={this.props.handleRefresh}/>
+                <StopModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.props.gluster_api} refresh={this.props.handleRefresh}/>
+                <DeleteModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.props.gluster_api} refresh={this.props.handleRefresh}/></td>
           </tr>
       );
       this.moreInfoModals.push(
-        <ObjectModal key={volume.id} modalObject={volume} title={"Volume: "+volume.name} modalId={volume.id}/>
+        <ObjectModal key={volume.id} modalObject={volume} title={"Volume: "+volume.name} modalId={volume.id} modalName={volume.name}/>
       );
       if(expanded){
         //TODO: pass the volume.bricksInfo brickinfo so it can be displayed in the modal
@@ -438,8 +439,11 @@ class ObjectModal extends Component {
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
-                <h4 className="modal-title">{this.props.title} <button type="button" className="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></h4>
-
+                <h4 className="modal-title">{this.props.title}
+                  <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </h4>
               </div>
               <div className="modal-body object-modal" >
                 <table>
@@ -453,6 +457,26 @@ class ObjectModal extends Component {
                 </table>
               </div>
               <div className="modal-footer">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal fade" id="confirm-delete" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h4 className="modal-title"> Delete Volume?
+                  <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </h4>
+              </div>
+              <div className="modal-body">
+                <strong> Do you really wish to delete this volume? This action cannot be undone!</strong>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-default" data-dismiss="modal">Cancel</button>
+                <a className="btn btn-danger btn-ok">Delete</a>
               </div>
             </div>
           </div>
@@ -475,8 +499,9 @@ function ObjectModalButton(props){
 }
 
 function StartModalButton(props){
-  let buttonState = (props.modalState=="Started") ? true:false
-  function handleClick(){
+  let buttonState = (props.modalState=="Started") ? "disabled":""
+  function handleClick(event){
+    event.stopPropagation();
     let promise = props.gluster_api.post("/v1/volumes/"+props.modalName+"/start")
     promise
     .then(function(result){
@@ -495,8 +520,9 @@ function StartModalButton(props){
 }
 
 function StopModalButton(props){
-  let buttonState = (props.modalState=="Stopped") ? true:false
-  function handleClick(){
+  let buttonState = (props.modalState=="Stopped"  || props.modalState=="Created") ? "disabled":""
+  function handleClick(event){
+    event.stopPropagation();
     let promise = props.gluster_api.post("/v1/volumes/"+props.modalName+"/stop")
     promise
     .then(function(result){
@@ -517,7 +543,43 @@ function StopModalButton(props){
 function DeleteModalButton(props){
   function handleClick(event){
     event.stopPropagation();
-    $("#"+props.modalId).modal({show:true,keyboard:true});
+    var confirmDelete = $('#confirm-delete')
+    confirmDelete.modal({show:true,keyboard:true});
+    confirmDelete.on('click', '.btn-ok', function(e) {
+      if(props.modalState === "Stopped") {
+        const deleteVolume = "/v1/volumes/"+props.modalName
+        let promise = props.gluster_api.request({body: " ", method: 'DELETE', path: deleteVolume })
+        .then(function(result) {
+              props.refresh()
+              confirmDelete.modal('hide')
+              console.log("Volume Deleted successfully!");
+        })
+        .catch(function(reason) {
+              console.log("Volume Not Deleted successfully because: ", reason);
+        });
+      } else {
+        const deleteVolume = "/v1/volumes/"+props.modalName
+        let promise = props.gluster_api.post("/v1/volumes/"+props.modalName+"/stop")
+        promise
+        .then(function(result){
+              console.log("Volume Stopped successfully");
+              props.refresh()
+              let promise1 = props.gluster_api.request({body: " ", method: 'DELETE', path: deleteVolume })
+              promise1
+              .then(function(result1) {
+                    props.refresh()
+                    confirmDelete.modal('hide')
+                    console.log("Volume Deleted successfully!");
+              })
+              .catch(function(reason1) {
+                    console.log("Volume Not Deleted successfully because: ", reason1);
+              });
+            })
+        .catch(function(reason){
+              console.warn("Volume didn't stop because: ", reason);
+            })
+      }
+    });
   }
   return (
     <button className="btn btn-find btn-link delete-modal-btn" title="Delete Volume" type="button" onClick={handleClick}>
