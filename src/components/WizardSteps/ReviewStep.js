@@ -23,10 +23,18 @@ class ReviewStep extends Component {
       inventory: this.generateInventory(this.props.glusterModel),
     }
     this.writeFile(this.state.inventory, INVENTORY);
+    this.deploymentStreamTextArea = React.createRef();
   }
 
-  componentWillReceiveProps = (nextProps) =>{
-    
+  componentDidUpdate = (prevProps, prevState) => {
+    if(prevProps.deploymentStream !== this.props.deploymentStream){
+      if(this.deploymentStreamTextArea){
+        this.deploymentStreamTextArea.current.scrollTop = this.deploymentStreamTextArea.current.scrollHeight;
+      }
+      else{
+        console.warn("no Ref for deploymentStream!")
+      }
+    }
   }
 
 
@@ -229,6 +237,7 @@ class ReviewStep extends Component {
       <textarea className="wizard-preview"
         value={this.props.deploymentStream}
         readOnly={true}
+        ref={this.deploymentStreamTextArea}
       />
     }
 </div>
