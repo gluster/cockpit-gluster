@@ -364,7 +364,7 @@ class VolumeTable extends Component{
           </tr>
       );
       this.moreInfoModals.push(
-        <ObjectModal key={volume.id} modalObject={volume} title={"Volume: "+volume.name} modalId={volume.id}/>
+        <ObjectModal key={volume.id} modalObject={volume} title={"Volume: "+volume.name} modalId={volume.id} modalName={volume.name}/>
       );
       if(expanded){
         //TODO: pass the volume.bricksInfo brickinfo so it can be displayed in the modal
