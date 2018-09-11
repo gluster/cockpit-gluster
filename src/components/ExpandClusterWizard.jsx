@@ -120,30 +120,42 @@ class ExpandClusterWizard extends Component {
   deploymentDone = (data,msg) => {
     console.debug("EC.dS.done", data,msg)
     this.setState((prevState)=>{
-      return { deploymentStream: prevState.deploymentStream+data}
+      return { isDeploymentStarted: false, deploymentStream: prevState.deploymentStream+data}
     });
   };
   deploymentFail = (ex,data) => {
     console.debug("EC.dS.fail", data,ex)
     this.setState((prevState)=>{
-      return { deploymentStream: prevState.deploymentStream+data}
+      return { isDeploymentStarted: false, deploymentStream: prevState.deploymentStream+data}
     });
   }
-  finish = (event) => {
+  deploy = (event) => {
     this.setState((prevState)=>{
-      let depPromise = runGlusterAnsible(
-        INVENTORY,
-        this.deploymentStreamer,
-        this.deploymentDone,
-        this.deploymentFail
-      );
-      return { isDeploymentStarted: true, deploymentPromise: depPromise }
+      if (!prevState.isDeploymentStarted){
+        let depPromise = runGlusterAnsible(
+          INVENTORY,
+          this.deploymentStreamer,
+          this.deploymentDone,
+          this.deploymentFail
+        );
+        return { isDeploymentStarted: true, deploymentPromise: depPromise }
+      }
+    });
+  }
+  stopDeployment = (e) =>{
+    this.setState((prevState)=>{
+      if (prevState.isDeploymentStarted){
+        this.state.deploymentPromise.close();
+        return { isDeploymentStarted: false }
+      }
     })
   }
   onCancel = (e) =>{
     this.setState((prevState)=>{
-      this.state.deploymentPromise.close();
-      return { isDeploymentStarted: true, deploymentPromise: process }
+      if (prevState.isDeploymentStarted){
+        this.state.deploymentPromise.close();
+        return { isDeploymentStarted: false }
+      }
     })
     this.props.onCancel();
   }
@@ -250,6 +262,9 @@ class ExpandClusterWizard extends Component {
 
   render(){
    // console.debug("EC.render",JSON.stringify(this.state.glusterModel));
+   let finalMethod = this.deploy;
+   let isNextDisabled = this.state.isDeploymentStarted;
+   let finalText = this.state.isDeploymentStarted ? "Retry" : "Deploy";
     return (
       <GeneralWizard
         title={this.title}
@@ -257,11 +272,12 @@ class ExpandClusterWizard extends Component {
         onNext={this.onNext}
         onBack={this.onBack}
         onCancel={this.onCancel}
-        onFinal={this.finish}
+        onFinal={finalMethod}
         onClose={this.close}
         handleStepChange={this.handleStepChange}
         activeStepIndex={this.state.activeStepIndex}
-        finalText="Deploy"
+        finalText={finalText}
+        isNextDisabled={isNextDisabled}
         >
         <HostStep
           stepName="Hosts"

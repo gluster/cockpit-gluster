@@ -25,6 +25,10 @@ class ReviewStep extends Component {
     this.writeFile(this.state.inventory, INVENTORY);
   }
 
+  componentWillReceiveProps = (nextProps) =>{
+    
+  }
+
 
 
 
@@ -214,12 +218,19 @@ class ReviewStep extends Component {
             </button>}
         </div>
     </div>
-    {!this.props.isDeploymentStarted && <textarea className="wizard-preview"
-        value={this.state.inventory} onChange={this.handleTextChange} readOnly={!this.state.isEditing}>
-    </textarea>}
-    {this.props.isDeploymentStarted && <textarea className="wizard-preview"
-        value={this.props.deploymentStream}  readOnly={true}>
-    </textarea>}
+    {!this.props.isDeploymentStarted &&
+      <textarea className="wizard-preview"
+        value={this.state.inventory}
+        onChange={this.handleTextChange}
+        readOnly={!this.state.isEditing}
+      />
+    }
+    {this.props.isDeploymentStarted &&
+      <textarea className="wizard-preview"
+        value={this.props.deploymentStream}
+        readOnly={true}
+      />
+    }
 </div>
 
           </Col>
