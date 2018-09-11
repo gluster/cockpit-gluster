@@ -322,6 +322,7 @@ class VolumeBricksTable extends Component{
 class VolumeTable extends Component{
   constructor(props){
     super(props);
+    this.gluster_api = cockpit.http("24007");
   }
 
   generateTable(){
@@ -338,7 +339,10 @@ class VolumeTable extends Component{
               {/* {volume.volumeBricks == 'ONLINE' ? <span className="fa fa-arrow-circle-o-up status-icon" ></span>:<span className="fa fa-arrow-circle-o-down status-icon"></span> } */}
               {volume.state}
             </td>
-            <td><ObjectModalButton modalId={volume.id}/></td>
+            <td><ObjectModalButton modalId={volume.id}/>
+                <StartModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/>
+                <StopModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/>
+                <DeleteModalButton modalId={volume.id}/></td>
           </tr>
       );
       this.moreInfoModals.push(
@@ -384,7 +388,7 @@ class VolumeTable extends Component{
               <th>Name</th>
               <th>Volume Type</th>
               <th>Status</th>
-              <th>More Info</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -404,6 +408,7 @@ class ObjectModal extends Component {
   }
 
   generateTable(){
+    console.log("modalName: ", this.props.modalName);
     this.rowList = [];
     for(let key in this.props.modalObject){
       var value = this.props.modalObject[key];
@@ -465,6 +470,58 @@ function ObjectModalButton(props){
   return (
     <button className="btn btn-find btn-link object-modal-btn" title="More Info" type="button" onClick={handleClick}>
       <span className="fa fa-lg fa-info-circle"></span>
+    </button>
+  );
+}
+
+function StartModalButton(props){
+  let buttonState = (props.modalState=="Started") ? true:false
+  function handleClick(){
+    let promise = props.gluster_api.post("/v1/volumes/"+props.modalName+"/start")
+    promise
+    .then(function(result){
+          console.log("Volume Started successfully");
+          props.refresh()
+        })
+    .catch(function(reason){
+          console.warn("Volume didn't start because: ", reason);
+        })
+  }
+  return (
+    <button className="btn btn-find btn-link start-modal-btn" title="Start Volume" type="button" disabled={buttonState} onClick={handleClick}>
+      <span className="pficon pficon-lg pficon-on"></span>
+    </button>
+  );
+}
+
+function StopModalButton(props){
+  let buttonState = (props.modalState=="Stopped") ? true:false
+  function handleClick(){
+    let promise = props.gluster_api.post("/v1/volumes/"+props.modalName+"/stop")
+    promise
+    .then(function(result){
+          console.log("Volume Stopped successfully");
+          props.refresh()
+        })
+    .catch(function(reason){
+          console.warn("Volume didn't stop because: ", reason);
+        })
+  }
+  return (
+    <button className="btn btn-find btn-link stop-modal-btn" title="Stop Volume" type="button" disabled={buttonState} onClick={handleClick}>
+      <span className="pficon pficon-lg pficon-off"></span>
+    </button>
+  );
+}
+
+function DeleteModalButton(props){
+  function handleClick(event){
+    event.stopPropagation();
+    $("#"+props.modalId).modal({show:true,keyboard:true});
+  }
+  return (
+    <button className="btn btn-find btn-link delete-modal-btn" title="Delete Volume" type="button" onClick={handleClick}>
+      <span className="pficon pficon-lg pficon-delete"></span>
     </button>
   );
 }
