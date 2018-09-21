@@ -2,10 +2,10 @@
 - hosts: local
   tasks:
     - name: Delete the volumes
-      shell: glustercli volume stop {{ item.volname }};glustercli volume delete {{ item.volname }}
+      shell: glustercli volume stop {{ item.volname }};glustercli volume delete {{ item.volname }} -y
       register: shell_output
       changed_when: shell_output.rc == 0
-      failed_when: False
+      #failed_when False
       with_items:
         - "{{ gluster_features_hci_volumes }}"
       tags:
@@ -14,7 +14,7 @@
       shell: glustercli peer remove $(glustercli peer list|grep {{ item }}:24008|awk '{ print $2; }')
       register: shell_output
       changed_when: shell_output.rc == 0
-      failed_when: False
+      #failed_when False
       with_inventory_hostnames:
         - hc_nodes
       tags:
@@ -29,17 +29,25 @@
       failed_when: False
       with_items:
         - "{{ gluster_infra_mount_devices }}"
+
     - name: Wipe filesystem from LVs
       shell: wipefs -a /dev/glusterfs_vg/gluster_lv_{{ item.volname }}
       register: shell_output
       changed_when: shell_output.rc == 0
-      failed_when: False
+      #failed_when False
       with_items:
         - "{{ hostvars[groups['local'][0]].gluster_features_hci_volumes }}"
     - name: Remove VG
-      shell: vgremove glusterfs_vg -f
+      shell: vgremove glusterfs_vg -ff
       register: shell_output
       changed_when: shell_output.rc == 0
-      failed_when: False
+      #failed_when False
+    - name: Remove VDO
+      shell: vdo remove -n {{ item.name }}
+      register: shell_output
+      changed_when: shell_output.rc == 0
+      #failed_when False
+      with_items:
+        - "{{ gluster_infra_vdo }}"
   tags:
     - cleanup_bricks
