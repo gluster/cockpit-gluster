@@ -28,7 +28,7 @@ class ReviewStep extends Component {
 
   componentDidUpdate = (prevProps, prevState) => {
     if(prevProps.deploymentStream !== this.props.deploymentStream){
-      if(this.deploymentStreamTextArea){
+      if(this.deploymentStreamTextArea.current){
         this.deploymentStreamTextArea.current.scrollTop = this.deploymentStreamTextArea.current.scrollHeight;
       }
       else{
@@ -241,6 +241,9 @@ class ReviewStep extends Component {
     this.setState({inventory: event.target.value});
   }
   render(){
+    let deploymentDone = this.props.deploymentState == "failed" || this.props.deploymentState == "done";
+    let showOutput = this.props.isDeploymentStarted || (deploymentDone && !this.props.isRetry);
+
     return (
       <Grid fluid>
         <Row>
@@ -260,28 +263,28 @@ class ReviewStep extends Component {
               Save
             </button>
           }
-          {!this.state.isEditing && !this.props.isDeploymentStarted &&
+          {!showOutput && !this.state.isEditing && !this.props.isDeploymentStarted &&
             <button className="btn btn-default"
                 onClick={this.handleEdit}>
                 <span className="pficon pficon-edit">&nbsp;</span>
                 Edit
             </button>
           }
-          {!this.props.isDeploymentStarted && <button className="btn btn-default"
+          {!showOutput && !this.props.isDeploymentStarted && <button className="btn btn-default"
               onClick={this.handleReload}>
               <span className="fa fa-refresh">&nbsp;</span>
               Reload
             </button>}
         </div>
     </div>
-    {!this.props.isDeploymentStarted &&
+    { !showOutput &&
       <textarea className="wizard-preview"
         value={this.state.inventory}
         onChange={this.handleTextChange}
         readOnly={!this.state.isEditing}
       />
     }
-    {this.props.isDeploymentStarted &&
+    { showOutput &&
       <textarea className="wizard-preview"
         value={this.props.deploymentStream}
         readOnly={true}

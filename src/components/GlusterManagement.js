@@ -32,6 +32,21 @@ class GlusterManagement extends Component {
     this.getPeers();
     this.getVolumes();
   }
+  refreshAll = () => {
+    this.getPeers();
+    this.getVolumes();
+    this.setState({ selectedVolumes: {} });
+
+  }
+  onCancelWizard = (type) => {
+    if(type == "expandCluster"){
+      this.setState({expandClusterStarted: false});
+    }
+    if(type == "createVolume"){
+      this.setState({createVolumeStarted: false});
+    }
+    this.refreshAll();
+  }
   onCancelExpandClusterWizard = (event) =>{
     this.setState({expandClusterStarted: false});
   }
@@ -191,12 +206,12 @@ class GlusterManagement extends Component {
             </div>
           </div>
           {this.state.expandClusterStarted && <ExpandClusterWizard
-            onCancel={this.onCancelExpandClusterWizard}
+            onCancel={()=>{this.onCancelWizard("expandCluster")}}
             ref={this.expandClusterWizard}
             type="expandCluster"
           />}
           {this.state.createVolumeStarted && <ExpandClusterWizard
-            onCancel={this.onCancelCreateVolumeWizard}
+            onCancel={()=>{this.onCancelWizard("createVolume")}}
             ref={this.createVolumeWizard}
             peers={this.state.peers}
             type="createVolume"
