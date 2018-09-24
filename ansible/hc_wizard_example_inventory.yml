@@ -1,6 +1,6 @@
 hc_nodes:
   hosts:
-    dhcp42-24.lab.eng.blr.redhat.com:
+    host1.example.com:
       gluster_infra_volume_groups:
         - vgname: vg_sdb
           pvname: /dev/sdb
@@ -45,7 +45,7 @@ hc_nodes:
           thinpool: thinpool_vg_sdd
           lvname: gluster_lv_vmstore
           lvsize: 100G
-    dhcp43-162.lab.eng.blr.redhat.com:
+    host2.example.com:
       gluster_infra_volume_groups:
         - vgname: vg_sdb
           pvname: /dev/sdb
@@ -90,7 +90,7 @@ hc_nodes:
           thinpool: thinpool_vg_sdd
           lvname: gluster_lv_vmstore
           lvsize: 100G
-    dhcp43-75.lab.eng.blr.redhat.com:
+    host3.example.com:
       gluster_infra_volume_groups:
         - vgname: vg_sdb
           pvname: /dev/sdb
