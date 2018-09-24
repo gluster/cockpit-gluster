@@ -1,53 +1,84 @@
-# cockpit-gluster 
+# cockpit-gluster
 A GD2 based dashboard for gluster management.
+It runs on any of the brick servers (where glusterd2 is running).
 
-### Current state: 
-- Working status panel for:
-  - Monitoring peers
-  - Monitoring volumes and bricks
-### Work in progress:
-- gluster-ansible integration for:
-  - deployment
-  - volume management functions
+### Contents:
+- [Features](#features)
+- [Build](#building-from-source)
+- [Package](#make-an-rpm)
+- [Setup GD2 environment](#setup-your-brick-servers-with-gd2)
+- [Install](#installing-on-one-of-the-gd2-nodes)
+- [Access](#browse-to-the-cockpit-port)
 
-## Install Dependencies
+### Features:
+- Status panel for monitoring peers, volumes and bricks
+- A Wizard for brick setup and volume deployment.
+### Pending Features
+- GD2 rest auth support.
+
+## Building from source
+
+### Install Build Dependencies
+
 ```
 sudo yum install -y npm
-```
-
-## Install JavaScipt Dependencies
-```
 npm install
 ```
 
-## Compile Javascript
+### Build the project
 ```
-npx --no-install webpack
+./node_modules/.bin/webpack
 ```
 
-## Build an rpm
+## Make an rpm
 ```
 make rpm
 ```
-## Install to a remote host running GD2 and Cockpit
+
+
+## Setup your brick servers with GD2:
+
+As GD2 is in development, it is recommended to build it from the `master` branch and deploy it with an external etcd.
+See [GD2 Resources](#gd2-resources)
+
+## Installing (on one of the GD2 nodes)
+### Install gluster-ansible and its dependencies:
+
+gluster-ansible is hosted in a [copr repo](https://copr.fedorainfracloud.org/coprs/sac/gluster-ansible/)
+
+#### Install the repo:
+
+| Operating System            | Install Command |
+| ------------- | --------------- |
+| Centos 7      | `sudo curl -o /etc/yum.repos.d/gluster-ansible.repo https://copr.fedorainfracloud.org/coprs/sac/gluster-ansible/repo/epel-7/sac-gluster-ansible-epel-7.repo`        |
+| Fedora 27+     | `sudo dnf copr enable sac/gluster-ansible`  |
+
+
+#### Install the packages from the repo:
+
 ```
-./scripts/rem_install.bash hostname
+sudo yum install gluster-ansible python-gluster-mgmt-client
+
+```
+
+## Install cockpit-gluster
+```
+yum install -y cockpit-gluster-x.x.x-x.noarch.rpm
 ```
 ## Browse to the cockpit port:
-`http://your-remotehost.domain:9090`
+`http://your-cockpithost.domain:9090`
 
 ## Screenshots
 ![Dashboard Image](/screenshots/dashboard.png?raw=true "Dashboard")
 ![Volume Modal Image](/screenshots/volume_modal.png?raw=true "Volume Modal")
 
 
-## Install GD2 and cockpit on some remote hosts:
-
-As GD2 is in development, it is recommended to build it from the `master` branch and deploy it with an external etcd.
 
 ## Cockpit
 
 https://github.com/cockpit-project/cockpit
+
+# GD2 Resources
 
 GD2 developement guide: https://github.com/gluster/glusterd2/blob/master/doc/development-guide.md
 

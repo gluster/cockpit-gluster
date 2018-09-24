@@ -550,7 +550,6 @@ class BrickRow extends Component {
             <Form>
               <FormGroup className="brick-form-group"  validationState={this.state.validation["thinPool"].validationState}>
                 <Checkbox
-                  disabled={true}
                   className="wizard-checkbox"
                   checked={brick["thinPool"]}
                   onChange={(event)=>{this.onChange(brick, "thinPool",event.target.checked)}}

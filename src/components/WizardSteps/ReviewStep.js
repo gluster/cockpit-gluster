@@ -23,6 +23,18 @@ class ReviewStep extends Component {
       inventory: this.generateInventory(this.props.glusterModel),
     }
     this.writeFile(this.state.inventory, INVENTORY);
+    this.deploymentStreamTextArea = React.createRef();
+  }
+
+  componentDidUpdate = (prevProps, prevState) => {
+    if(prevProps.deploymentStream !== this.props.deploymentStream){
+      if(this.deploymentStreamTextArea.current){
+        this.deploymentStreamTextArea.current.scrollTop = this.deploymentStreamTextArea.current.scrollHeight;
+      }
+      else{
+        console.warn("no Ref for deploymentStream!")
+      }
+    }
   }
 
 
@@ -55,16 +67,41 @@ class ReviewStep extends Component {
 
 
     for (let hostIndex = 0; hostIndex < hosts.length;hostIndex++){
-      let hostVars = {}
-      let hostBricks = bricks[hostIndex]
-      let hostPVs = []
+      let hostVars = {};
+      hostVars.gluster_infra_volume_groups = [];
+      hostVars.gluster_infra_mount_devices = [];
+      let processedDevs = {}; // VG and VDO is processed once per device processedVG implies processedVDO
+      let hostBricks = bricks[hostIndex];
+      let hostCacheConfig = cacheConfig[hostIndex];
+
       for (let brick of hostBricks){
-        let brickPV = brick.device;
-        console.debug("RS.generateInventory.brick vdo vdoSize", brick.vdo,brick.vdoSize)
-        if(brick.vdo == true && brick.vdoSize){
-          let deviceName = brick.device.split("/").pop();
-          let vdoName = `vdo_${deviceName}`
-          brickPV = `/dev/${vdoName}`;
+        let devName = brick.device.split("/").pop();
+        let pvName = brick.device; //changes if vdo
+        let vgName = `vg_${devName}`;
+        let thinpoolName = `thinpool_${vgName}`;
+        let lvName = `gluster_lv_${brick.volName}`;
+        let isDevProcessed = Object.keys(processedDevs).indexOf(devName) > -1;
+        let isThinpoolCreated = false;
+        if(isDevProcessed){
+          isThinpoolCreated = processedDevs[devName]['thinpool'];
+        }
+        let isVDO = brick.vdo == true && brick.vdoSize;
+        //TODO: cache more than one device.
+        if(hostCacheConfig.cache && hostVars.gluster_infra_cache_vars == undefined){
+          hostVars.gluster_infra_cache_vars = [{
+            vgname: vgName,
+            cachedisk: hostCacheConfig.ssd,
+            cachelvname: `cachelv_${thinpoolName}`,
+            cachethinpoolname: thinpoolName,
+            cachelvsize: `${hostCacheConfig.size - (hostCacheConfig.size/10)}G`,
+            cachemetalvsize: `${hostCacheConfig.size/10}G`,
+            cachemetalvname: `cache_${thinpoolName}`,
+            cachemode: hostCacheConfig.mode
+          }];
+        }
+        if(isVDO){
+          let vdoName = `vdo_${devName}`
+          pvName = `/dev/mapper/${vdoName}`;
           if(hostVars.gluster_infra_vdo == undefined){
             hostVars.gluster_infra_vdo = [];
             hostVars.gluster_infra_vdo_blockmapcachesize = "128M";
@@ -74,7 +111,8 @@ class ReviewStep extends Component {
             hostVars.gluster_infra_vdo_writepolicy = "auto";
             hostVars.gluster_infra_vdo_emulate512 = "on";
           }
-          if(hostPVs.indexOf(brickPV) == -1){
+
+          if(!isDevProcessed){
             hostVars.gluster_infra_vdo.push({
               name: vdoName,
               device: brick.device,
@@ -82,32 +120,54 @@ class ReviewStep extends Component {
             });
           }
         }
-        hostPVs.push(brickPV);
-      }
-      hostVars.gluster_infra_pvs = this.uniqueStringsArray(hostPVs);
-      //HACK while looking for relevant gluster-ansible funcitonality
-      hostVars.gluster_infra_lv_logicalvols = hostBricks
-        .slice(1,hostBricks.length)
-        .map((brick)=>{
-          return {
-            lvname: `gluster_lv_${brick.volName}`,
-            lvsize: `${brick.size}G`
-          };
-        });
-        hostVars.gluster_infra_mount_devices = hostBricks.map((brick)=>{
-        return {
-          path: brick.mountPoint,
-          lv: `gluster_lv_${brick.volName}`
+
+        if(!isDevProcessed){
+          //create vg
+          hostVars.gluster_infra_volume_groups.push({
+            vgname: vgName,
+            pvname: pvName
+          });
         }
-      });
-      hostVars.gluster_infra_thick_lvs = hostBricks
-      .slice(0,1)
-      .map((brick)=>{
-        return {
-          name: `gluster_lv_${brick.volName}`,
-          size: `${brick.size}G`
-        };
-      });
+
+        if(brick.thinPool && !isThinpoolCreated){
+          if(hostVars.gluster_infra_thinpools == undefined){
+            hostVars.gluster_infra_thinpools = [];
+          }
+          hostVars.gluster_infra_thinpools.push({
+            vgname: vgName,
+            thinpoolname: thinpoolName
+          });
+          isThinpoolCreated = true;
+        }
+
+        if(brick.thinPool){
+          if(hostVars.gluster_infra_lv_logicalvols == undefined){
+            hostVars.gluster_infra_lv_logicalvols = [];
+          }
+          hostVars.gluster_infra_lv_logicalvols.push({
+            vgname: vgName,
+            thinpool: thinpoolName,
+            lvname: lvName,
+            lvsize: `${brick.size}G`
+          });
+        }
+        if(!brick.thinPool){
+          if(hostVars.gluster_infra_thick_lvs == undefined){
+            hostVars.gluster_infra_thick_lvs = [];
+          }
+          hostVars.gluster_infra_thick_lvs.push({
+            vgname: vgName,
+            lvname: lvName,
+            size: `${brick.size}G`
+          });
+        }
+        hostVars.gluster_infra_mount_devices.push({
+          path: brick.mountPoint,
+          lvname: lvName,
+          vgname: vgName
+        });
+        processedDevs[devName] = {thinpool: isThinpoolCreated}
+      }
       groups.hc_nodes.hosts[hosts[hostIndex]] = hostVars;
     }
 
@@ -121,6 +181,11 @@ class ReviewStep extends Component {
         master: "localhost"
       });
     }
+    const SSH_OPTS = '-o StrictHostKeyChecking=no'
+
+    localVars.ansible_ssh_common_args = SSH_OPTS;
+    groupVars.ansible_ssh_common_args = SSH_OPTS;
+
     groups.hc_nodes.vars = groupVars;
     groups.local.vars = localVars;
 
@@ -176,6 +241,9 @@ class ReviewStep extends Component {
     this.setState({inventory: event.target.value});
   }
   render(){
+    let deploymentDone = this.props.deploymentState == "failed" || this.props.deploymentState == "done";
+    let showOutput = this.props.isDeploymentStarted || (deploymentDone && !this.props.isRetry);
+
     return (
       <Grid fluid>
         <Row>
@@ -195,26 +263,34 @@ class ReviewStep extends Component {
               Save
             </button>
           }
-          {!this.state.isEditing && !this.props.isDeploymentStarted &&
+          {!showOutput && !this.state.isEditing && !this.props.isDeploymentStarted &&
             <button className="btn btn-default"
                 onClick={this.handleEdit}>
                 <span className="pficon pficon-edit">&nbsp;</span>
                 Edit
             </button>
           }
-          {!this.props.isDeploymentStarted && <button className="btn btn-default"
+          {!showOutput && !this.props.isDeploymentStarted && <button className="btn btn-default"
               onClick={this.handleReload}>
               <span className="fa fa-refresh">&nbsp;</span>
               Reload
             </button>}
         </div>
     </div>
-    {!this.props.isDeploymentStarted && <textarea className="wizard-preview"
-        value={this.state.inventory} onChange={this.handleTextChange} readOnly={!this.state.isEditing}>
-    </textarea>}
-    {this.props.isDeploymentStarted && <textarea className="wizard-preview"
-        value={this.props.deploymentStream}  readOnly={true}>
-    </textarea>}
+    { !showOutput &&
+      <textarea className="wizard-preview"
+        value={this.state.inventory}
+        onChange={this.handleTextChange}
+        readOnly={!this.state.isEditing}
+      />
+    }
+    { showOutput &&
+      <textarea className="wizard-preview"
+        value={this.props.deploymentStream}
+        readOnly={true}
+        ref={this.deploymentStreamTextArea}
+      />
+    }
 </div>
 
           </Col>
