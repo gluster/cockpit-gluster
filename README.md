@@ -37,18 +37,10 @@ make rpm
 ```
 
 
-## Setup your brick servers with GD2 and ansible dependencies:
-
-On your brick servers:
-
-```
-sudo yum install -y python-requests python-jwt
-```
-
-and install and start/enable glusterd2.
+## Setup your brick servers with GD2
 
 As GD2 is in development, it is recommended to build it from the `master` branch and deploy it with an external etcd.
-See [GD2 Resources](#gd2-resources)
+See [GD2 Resources](#gd2-resources) for more information, and automated setup.
 
 ## Installing (on one of the GD2 nodes)
 ### Install gluster-ansible and its dependencies:
@@ -93,4 +85,4 @@ GD2 developement guide: https://github.com/gluster/glusterd2/blob/master/doc/dev
 
 GD2 quickstart guide: https://github.com/gluster/glusterd2/blob/master/doc/quick-start-user-guide.md
 
-With my scripts (on CentOS VMs): https://github.com/rohantmp/gd2-testing
+A two command cluster setup with ansible and bash (for CentOS machines): https://github.com/rohantmp/gd2-testing
