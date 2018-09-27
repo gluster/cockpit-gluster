@@ -36,7 +36,7 @@ make rpm
 ```
 
 
-## Setup your brick servers with GD2 ansible dependencies:
+## Setup your brick servers with GD2 and ansible dependencies:
 
 On your brick servers:
 
