@@ -12,8 +12,8 @@ class VolumeStep extends Component{
       volumeValidation: this.props.glusterModel.volumes.map((x)=>false),
     }
     this.typeOptions = [
-      {name: "Replica", value:"replica"},
-      {name: "Distribute", value:"distribute"}
+      {name: "Replica", value:"replica"}
+      // ,{name: "Distribute", value:"distribute"}
     ]
     this.props.callback({isValid: this.state.volumeValidation.every((isValid)=> isValid)});
    //console.debug("VS.Constructor: volumes", this.state.volumes);

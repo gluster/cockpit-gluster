@@ -15,6 +15,7 @@ It runs on any of the brick servers (where glusterd2 is running).
 - A Wizard for brick setup and volume deployment.
 ### Pending Features
 - GD2 rest auth support.
+- Supporting multiple volume types.
 
 ## Building from source
 
