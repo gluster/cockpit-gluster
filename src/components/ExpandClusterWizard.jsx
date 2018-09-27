@@ -31,6 +31,7 @@ class ExpandClusterWizard extends Component {
 
     }
     if (this.props.type == "createVolume"){
+      this.title = "Create Volume";
       console.debug("EC.createVolume gM.hosts",this.state.glusterModel.hosts);
       this.state.glusterModel.hosts = this.props.peers.slice(0,3).map((host)=>host.name);
       this.state.glusterModel.volumes = [{
@@ -38,9 +39,10 @@ class ExpandClusterWizard extends Component {
                   type: "replicate",
                   isArbiter: false,
                   brickDir: ""
-                }]
+                }];
     }
     else{
+      this.title = "Expand Cluster";
       console.debug("EC.expandCluster gM.hosts",this.state.glusterModel.hosts);
       this.state.glusterModel.volumes = [{
                   name: "engine",
