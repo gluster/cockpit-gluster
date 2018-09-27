@@ -36,7 +36,15 @@ make rpm
 ```
 
 
-## Setup your brick servers with GD2:
+## Setup your brick servers with GD2 ansible dependencies:
+
+On your brick servers:
+
+```
+sudo yum install -y python-requests python-jwt
+```
+
+and install and start/enable glusterd2.
 
 As GD2 is in development, it is recommended to build it from the `master` branch and deploy it with an external etcd.
 See [GD2 Resources](#gd2-resources)
