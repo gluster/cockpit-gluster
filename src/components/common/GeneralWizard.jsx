@@ -21,7 +21,7 @@ class GeneralWizard extends Component {
     <Wizard show={this.props.show} title={this.props.title}>
       <Wizard.Header
         onClose={this.props.onClose}
-        title={this.children[this.props.activeStepIndex].props.stepName}
+        title={this.props.title}
       />
       <WizSteps
         activeStep={this.props.activeStepIndex}
