@@ -135,7 +135,8 @@ class ReviewStep extends Component {
           }
           hostVars.gluster_infra_thinpools.push({
             vgname: vgName,
-            thinpoolname: thinpoolName
+            thinpoolname: thinpoolName,
+            poolmetadatasize: '16G'
           });
           isThinpoolCreated = true;
         }
