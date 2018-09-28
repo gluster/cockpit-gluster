@@ -10,8 +10,9 @@ It runs on any of the brick nodes (where glusterd2 is running).
 - [Setup GD2 environment](#setup-your-brick-servers-with-gd2)
 - [Install](#installing-on-one-of-the-gd2-nodes)
 - [Access](#browse-to-the-cockpit-port)
-- [Dashboard screenshots](#dashboard-screenshots)
-- [Create volumes](#create-volumes)
+- [Create volumes](#creating-volumes)
+- [Screenshots](#screenshots)
+
 
 ### Features:
 - Status panel for monitoring peers, volumes and bricks
