@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import {Grid, Form, FormGroup, FormControl, ControlLabel, HelpBlock, Checkbox} from 'patternfly-react'
-import { notEmpty } from '../common/validators'
+import { notEmpty } from '../../lib/validators'
 import Dropdown from '../common/Dropdown'
 
 class VolumeStep extends Component{
@@ -12,8 +12,8 @@ class VolumeStep extends Component{
       volumeValidation: this.props.glusterModel.volumes.map((x)=>false),
     }
     this.typeOptions = [
-      {name: "Replica", value:"replica"},
-      {name: "Distribute", value:"distribute"}
+      {name: "Replica", value:"replica"}
+      // ,{name: "Distribute", value:"distribute"}
     ]
     this.props.callback({isValid: this.state.volumeValidation.every((isValid)=> isValid)});
    //console.debug("VS.Constructor: volumes", this.state.volumes);

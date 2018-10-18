@@ -3,7 +3,7 @@ BUILDIR = $(CURDIR)/build_dir
 BUILDROOT = $(CURDIR)/build_root
 
 PACKAGE = cockpit-gluster
-VERSION = 0.1
+VERSION = 0.0.1
 RELEASE = 0
 RPMBUILD_ARGS := --define="_topdir $(TMPREPOS)" --define="_version $(VERSION)" --buildroot="$(BUILDROOT)"
 

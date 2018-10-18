@@ -6,6 +6,8 @@ import VolumeStep from './WizardSteps/VolumeStep'
 import BrickStep from './WizardSteps/BrickStep'
 import ReviewStep from './WizardSteps/ReviewStep'
 
+import { defaultGlusterModel, runGlusterAnsible, INVENTORY } from '../lib/gluster-ansible'
+
 
 
 class ExpandClusterWizard extends Component {
@@ -13,20 +15,7 @@ class ExpandClusterWizard extends Component {
     super(props)
     //TODO: push glusterModel out to seperate file and handle different defaults
     this.state = {
-      glusterModel: {
-        hosts:["","",""],
-        volumes: [ ],
-        bricks: [],
-        cacheConfig: [
-
-        ],
-        raidConfig:{
-          hostIndex: 0,
-          raid_type:"JBOD",
-          stripe_size:256,
-          disk_count:12
-        }
-      },
+      glusterModel: JSON.parse(JSON.stringify(defaultGlusterModel)),
       volumeStepValid:true,
       show: true,
       loading: false,
@@ -35,19 +24,26 @@ class ExpandClusterWizard extends Component {
       showValidation: false,
       activeStepIndex: 0,
       isDeploymentStarted: false,
-      deploymentPromise: null
+      deploymentPromise: null,
+      deploymentStream: "",
+      deploymentState: "",
+      isRetry: false
 
     }
     if (this.props.type == "createVolume"){
+      this.title = "Create Volume";
+      console.debug("EC.createVolume gM.hosts",this.state.glusterModel.hosts);
       this.state.glusterModel.hosts = this.props.peers.slice(0,3).map((host)=>host.name);
       this.state.glusterModel.volumes = [{
                   name: "",
                   type: "replicate",
                   isArbiter: false,
                   brickDir: ""
-                }]
+                }];
     }
     else{
+      this.title = "Expand Cluster";
+      console.debug("EC.expandCluster gM.hosts",this.state.glusterModel.hosts);
       this.state.glusterModel.volumes = [{
                   name: "engine",
                   type: "replicate",
@@ -119,27 +115,51 @@ class ExpandClusterWizard extends Component {
       return newState;
     });
   }
-  setStreamer = (streamer) => {
-    this.setState({deploymentStreamer: streamer});
-  }
-  finish = (event) => {
+  deploymentStreamer = (data) => {
+    console.debug("EC.dS.stream", data)
     this.setState((prevState)=>{
-      let process = cockpit.spawn(
-        ["/usr/bin/ansible-playbook",
-         "/etc/ansible/hc_wizard.yml",
-         "-i /etc/ansible/hc_wizard_inventory.yml"
-         ]
-       );
-      if(prevState.deploymentStreamer !== undefined){
-        process.done((data)=>{console.log(data)}).fail((data)=>{console.log(data)}).stream(prevState.deploymentStreamer);
+      return { deploymentStream: prevState.deploymentStream+data}
+    });
+  }
+  deploymentDone = (data,msg) => {
+    console.debug("EC.dS.done", data,msg)
+    this.setState((prevState)=>{
+      return { isDeploymentStarted: false, deploymentStream: prevState.deploymentStream+data, deploymentState: "done"}
+    });
+  };
+  deploymentFail = (ex,data) => {
+    console.debug("EC.dS.fail", data,ex)
+    this.setState((prevState)=>{
+      return { isDeploymentStarted: false, deploymentStream: prevState.deploymentStream+data, deploymentState: "failed"}
+    });
+  }
+  deploy = (event) => {
+    this.setState((prevState)=>{
+      if (!prevState.isDeploymentStarted){
+        let depPromise = runGlusterAnsible(
+          INVENTORY,
+          this.deploymentStreamer,
+          this.deploymentDone,
+          this.deploymentFail
+        );
+        return { isDeploymentStarted: true, deploymentPromise: depPromise, deploymentState: "started", isRetry: false}
       }
-      return { isDeploymentStarted: true, deploymentPromise: process }
+    });
+  }
+  stopDeployment = (e) =>{
+    this.setState((prevState)=>{
+      if (prevState.isDeploymentStarted){
+        this.state.deploymentPromise.close();
+        return { isDeploymentStarted: false }
+      }
     })
   }
   onCancel = (e) =>{
     this.setState((prevState)=>{
-      this.state.deploymentPromise.close();
-      return { isDeploymentStarted: true, deploymentPromise: process }
+      if (prevState.isDeploymentStarted){
+        this.state.deploymentPromise.close();
+        return { isDeploymentStarted: false }
+      }
     })
     this.props.onCancel();
   }
@@ -206,6 +226,12 @@ class ExpandClusterWizard extends Component {
       case 1:
         this.volumeExit();
       break;
+      // case 2:
+      //   this.bricksExit();
+      // break;
+      // case 3:
+      //   this.reviewExit();
+      // break;
     }
   }
   hostExit = () => {
@@ -244,8 +270,26 @@ class ExpandClusterWizard extends Component {
     });
   }
 
+  handleRetry = (event) => {
+    this.setState({isRetry: true});
+  }
+
+  handleCancel = (event) => {
+    this.props.onCancel();
+  }
+
   render(){
    // console.debug("EC.render",JSON.stringify(this.state.glusterModel));
+   let closeMethod = this.close;
+   let showRetry = this.state.deploymentState == "failed" && !this.state.isRetry;
+   let finalMethod = showRetry ? this.handleRetry : this.deploy;
+   let isNextDisabled = this.state.isDeploymentStarted;
+   let finalText = showRetry ? "Retry" : "Deploy";
+   if(this.state.deploymentState == "done"){
+     finalMethod = this.handleCancel;
+     closeMethod = this.handleCancel;
+     finalText = "Done"
+   }
     return (
       <GeneralWizard
         title={this.title}
@@ -253,11 +297,12 @@ class ExpandClusterWizard extends Component {
         onNext={this.onNext}
         onBack={this.onBack}
         onCancel={this.onCancel}
-        onFinal={this.finish}
-        onClose={this.close}
+        onFinal={finalMethod}
+        onClose={closeMethod}
         handleStepChange={this.handleStepChange}
         activeStepIndex={this.state.activeStepIndex}
-        finalText="Deploy"
+        finalText={finalText}
+        isNextDisabled={isNextDisabled}
         >
         <HostStep
           stepName="Hosts"
@@ -282,7 +327,9 @@ class ExpandClusterWizard extends Component {
         glusterModel={this.state.glusterModel}
         isDeploymentStarted={this.state.isDeploymentStarted}
         deploymentPromise={this.state.deploymentPromise}
-        setStreamer={this.setStreamer}
+        deploymentStream={this.state.deploymentStream}
+        deploymentState={this.state.deploymentState}
+        isRetry={this.state.isRetry}
       />
 
       </GeneralWizard>

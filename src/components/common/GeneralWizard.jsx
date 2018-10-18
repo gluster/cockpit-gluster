@@ -21,7 +21,7 @@ class GeneralWizard extends Component {
     <Wizard show={this.props.show} title={this.props.title}>
       <Wizard.Header
         onClose={this.props.onClose}
-        title={this.children[this.props.activeStepIndex].props.stepName}
+        title={this.props.title}
       />
       <WizSteps
         activeStep={this.props.activeStepIndex}
@@ -39,6 +39,7 @@ class GeneralWizard extends Component {
         stepCount={this.children.length}
         activeStepIndex={this.props.activeStepIndex}
         finalText={this.props.finalText}
+        isNextDisabled={this.props.isNextDisabled}
 
       />
     </Wizard>
@@ -131,6 +132,31 @@ WizFooter.propTypes = {
 }
 
 WizFooter.defaultProps = {
+  cancelText: "Cancel",
+  backText: "Back",
+  nextText: "Next",
+  finalText: "Finish",
+  isBackDisabled: false,
+  isNextDisabled: false
+}
+GeneralWizard.propTypes = {
+  onBack: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onFinal: PropTypes.func.isRequired,
+  show: PropTypes.bool.isRequired,
+  isBackDisabled: PropTypes.bool.isRequired,
+  isNextDisabled: PropTypes.bool.isRequired,
+  activeStepIndex: PropTypes.number.isRequired,
+  title: PropTypes.string,
+  cancelText: PropTypes.string,
+  backText: PropTypes.string,
+  nextText: PropTypes.string,
+  finalText: PropTypes.string,
+}
+
+GeneralWizard.defaultProps = {
   cancelText: "Cancel",
   backText: "Back",
   nextText: "Next",

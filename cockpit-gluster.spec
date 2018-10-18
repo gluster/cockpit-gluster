@@ -12,6 +12,7 @@ Source0:        https://example.com/%{name}/release/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 
 Requires: cockpit
+Requires: ansible
 
 Prefix: %{_plugindir}
 %description
