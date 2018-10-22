@@ -357,9 +357,9 @@ class VolumeTable extends Component{
               {volume.state}
             </td>
             <td><ObjectModalButton modalId={volume.id}/>
-                <StartModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/>
-                <StopModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/>
-                <DeleteModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.gluster_api} refresh={this.props.handleRefresh}/></td>
+                <StartModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.props.gluster_api} refresh={this.props.handleRefresh}/>
+                <StopModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.props.gluster_api} refresh={this.props.handleRefresh}/>
+                <DeleteModalButton modalState={volume.state} modalName={volume.name} gluster_api={this.props.gluster_api} refresh={this.props.handleRefresh}/></td>
           </tr>
       );
       this.moreInfoModals.push(
@@ -417,5 +417,4 @@ class VolumeTable extends Component{
     )
   }
 }
-
 export default GlusterManagement

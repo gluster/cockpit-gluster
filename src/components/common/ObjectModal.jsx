@@ -55,11 +55,7 @@ export class ObjectModal extends Component {
             </div>
           </div>
         </div>
-<<<<<<< HEAD
-        <div className="modal fade" id="confirm-delete" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel">
-=======
         <div className="modal fade" id="confirm-delete" tabIndex="-1" role="dialog">
->>>>>>> Added start, stop and delete volume actions with proper functionality.
           <div className="modal-dialog" role="document">
             <div className="modal-content">
               <div className="modal-header">
