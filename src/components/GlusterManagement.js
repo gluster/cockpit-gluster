@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import jwt from 'jsonwebtoken'
 import ExpandClusterWizard from './ExpandClusterWizard'
-import { ObjectModal, ObjectModalButton } from './common/ObjectModal'
+import { ObjectModal, ObjectModalButton, StartModalButton, StopModalButton, DeleteModalButton } from './common/ObjectModal'
 import { InlineAlert } from './common/Alerts'
 
 class GlusterManagement extends Component {
@@ -340,7 +340,6 @@ class VolumeBricksTable extends Component{
 class VolumeTable extends Component{
   constructor(props){
     super(props);
-    this.gluster_api = cockpit.http("24007");
   }
 
   generateTable(){
