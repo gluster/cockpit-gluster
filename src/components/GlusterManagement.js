@@ -340,7 +340,6 @@ class VolumeBricksTable extends Component{
 class VolumeTable extends Component{
   constructor(props){
     super(props);
-    this.gluster_api = cockpit.http("24007");
   }
 
   generateTable(){
