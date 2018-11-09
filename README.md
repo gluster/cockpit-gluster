@@ -6,6 +6,7 @@ It runs on any of the brick nodes (where glusterd2 is running).
 ### Contents:
 - [Features](#features)
 - [Build](#building-from-source)
+- [Developing with vagrant](#developing-with-vagrant) (also the quickest way to try out a gd2 cluster locally)
 - [Package](#make-an-rpm)
 - [Setup GD2 environment](#setup-your-brick-servers-with-gd2)
 - [Install](#installing-on-one-of-the-gd2-nodes)
@@ -19,7 +20,10 @@ It runs on any of the brick nodes (where glusterd2 is running).
 - A Wizard for brick setup and volume deployment.
 ### Pending Features
 - GD2 rest auth support.
-- Supporting multiple volume types.
+- Supporting all volume types.
+
+
+
 
 ## Building from source
 
@@ -34,6 +38,20 @@ npm install
 ```
 ./node_modules/.bin/webpack
 ```
+
+### Developing with vagrant:
+After building run these commands in the repo folder:
+```
+#install vagrant
+sudo yum install vagrant -y
+sudo vagrant up
+
+```
+and browse to `localhost:9091`. Congratulations, you're up!
+
+After making any changes to the code you can run `npx webpack && sudo vagrant rsync` to build and copy the plugin to the VMs.
+Refresh the browser to see your changes.
+
 
 ## Make an rpm
 ```
