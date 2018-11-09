@@ -15,6 +15,7 @@
       with_items:
         - python-jwt
         - python-requests
+        - policycoreutils-python
   roles:
     - gluster.infra
   tags:
