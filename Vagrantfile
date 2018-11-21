@@ -5,6 +5,8 @@
 cluster_count = 1
 node_disk_count = 2 #Changing this won't do anything because creating disks in a loop doesn't seem to work.
 disk_size = 20 #GB
+cpus = 2
+memory = 2048
 
 node_count = cluster_count * 3
 total_disks = node_count * node_disk_count
@@ -23,34 +25,28 @@ Vagrant.configure(2) do |config|
 
         node.vm.box = "centos/7"
         node.vm.synced_folder ".", "/vagrant", disabled: true
-        node.vm.network "private_network", ip: vm_ip
+        node.vm.network "private_network",
+            :ip => vm_ip,
+            :libvirt__driver_queues => "#{cpus}"
         node.vm.post_up_message = "VM private ip: #{vm_ip}"
         node.vm.hostname = "gd2-node-#{num}"
 
         node.vm.provider "libvirt" do |lvt|
-          lvt.memory = 1024
-          lvt.nested = true
-          lvt.cpu_mode = "host-model"
+          lvt.memory = "#{memory}"
+          lvt.cpus = "#{cpus}"
+          lvt.nested = false
+          lvt.cpu_mode = "host-passthrough"
+          lvt.volume_cache = "writeback"
+          lvt.graphics_type = "none"
+          lvt.video_type = "vga"
+          lvt.video_vram = 1024
+          # lvt.usb_controller :model => "none"  # (requires vagrant-libvirt 0.44 which is not in Fedora yet)
+          lvt.random :model => 'random'
+          lvt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
           #disk_config
           lvt.storage :file, :size => "#{disk_size}G"
           lvt.storage :file, :size => "#{disk_size}G"
-
         end
-
-
-        #broken
-        # node.vm.provider "virtualbox" do |vb|
-        #     vb.memory = 1024
-        #     vb.customize ['storagectl', :id, '--name', 'SATA Controller', '--add', 'sata', '--portcount', node_disk_count]
-        #     (1..node_disk_count).each do |disk_num|
-        #       disk_path = "./virtualbox_disks/node-#{num}-disk-#{disk_num}.vdi"
-        #       if not File.exists?(disk_path)
-        #         vb.customize ['createhd', '--filename', disk_path, '--variant', 'Standard', '--size', node_disk_count * 1024]
-        #       end
-        #       vb.customize ['storageattach', :id,  '--storagectl', 'SATA Controller', '--port', disk_num, '--device', 0, '--type', 'hdd', '--medium', disk_path]
-        #     end
-        # end
-
 
         if num == 1
           node.vm.synced_folder "./dist", "/root/.local/share/cockpit/gluster-management", type: "rsync", create: true, rsync__args: ["--verbose", "--archive", "--delete", "-z"]
@@ -62,8 +58,9 @@ Vagrant.configure(2) do |config|
         node.vm.provision "shell", inline: <<-SHELL
           set -u
 
-          yum update -y
-          yum install -y util-linux   # for chfn
+
+          yum update -y --disableplugin=subscription-manager --downloaddir=/dev/shm
+          yum install -y --disableplugin=subscription-manager --downloaddir=/dev/shm util-linux
 
           echo foobar | passwd --stdin root
           getent passwd admin >/dev/null || useradd -c Administrator -G wheel admin
@@ -73,7 +70,7 @@ Vagrant.configure(2) do |config|
 
 
 
-          yum install -y \
+          yum install -y --disableplugin=subscription-manager --downloaddir=/dev/shm \
               storaged \
               storaged-lvm2 \
               yum-utils \
@@ -85,7 +82,7 @@ Vagrant.configure(2) do |config|
           curl -o /etc/yum.repos.d/gd2-master.repo http://artifacts.ci.centos.org/gluster/gd2-nightly/gd2-master.repo
           curl -o /etc/yum.repos.d/sac-gluster-ansible-epel-7.repo https://copr.fedorainfracloud.org/coprs/sac/gluster-ansible/repo/epel-7/sac-gluster-ansible-epel-7.repo
           curl -o /etc/yum.repos.d/glusterfs-nightly-master.repo http://artifacts.ci.centos.org/gluster/nightly/master.repo
-          yum install -y \
+          yum install -y --disableplugin=subscription-manager --downloaddir=/dev/shm \
             glusterd2 \
             gluster-ansible python-gluster-mgmt-client \
             glusterfs-server glusterfs-fuse glusterfs-api
@@ -104,6 +101,8 @@ Vagrant.configure(2) do |config|
           then
             ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
           fi
+
+	  rm -rf /dev/shm/yumdb
 
           if [[ #{num} -eq 1 ]]
           then
