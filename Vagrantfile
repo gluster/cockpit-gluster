@@ -3,20 +3,21 @@
 
 
 cluster_count = 1
-node_disk_count = 2 #Changing this won't do anything because creating disks in a loop doesn't seem to work.
+node_data_disk_count = 2
+driveletters = ('a'..'z').to_a
 disk_size = 20 #GB
 cpus = 2
 memory = 2048
 
 node_count = cluster_count * 3
-total_disks = node_count * node_disk_count
+total_disks = node_count * node_data_disk_count
 total_disk_usage = total_disks * disk_size
 enable_glusterd2_rest_auth = false
 
 Vagrant.configure(2) do |config|
     puts "Creating #{cluster_count} clusters."
     puts "Creating #{node_count} nodes."
-    puts "Creating #{node_disk_count} disks(#{disk_size}G) each."
+    puts "Creating #{node_data_disk_count} data disks (#{disk_size}G) each."
     puts "Using #{total_disk_usage} GB!."
 
     (1..node_count).reverse_each do |num|
@@ -44,8 +45,12 @@ Vagrant.configure(2) do |config|
           lvt.random :model => 'random'
           lvt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
           #disk_config
-          lvt.storage :file, :size => "#{disk_size}G"
-          lvt.storage :file, :size => "#{disk_size}G"
+          disks = []
+          (2..(node_data_disk_count+1)).each do |d|
+            lvt.storage :file, :device => "vd#{driveletters[d]}", :size => "#{disk_size}G"
+            disks.push "/dev/vd#{driveletters[d]}"
+	  end
+
         end
 
         if num == 1
