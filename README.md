@@ -1,3 +1,5 @@
+# Note: This project is not currently being maintained.
+
 # cockpit-gluster
 A [cockpit](https://github.com/cockpit-project/cockpit) plugin that provides a status view and volume actions for a gluster cluster with [glusterd2](https://github.com/gluster/glusterd2)(GD2) based bricks.
 
